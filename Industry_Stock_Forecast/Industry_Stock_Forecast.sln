@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2003
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Industry_Stock_Forecast", "Industry_Stock_Forecast\Industry_Stock_Forecast.pyproj", "{23F7AB8B-247E-4C5E-BCB8-F28000E9E20D}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Time_Series_CV", "..\..\..\..\..\GitRepos\Finance\Big-data-and-Finance\Presentation\Time_Series_CV\Time_Series_CV.pyproj", "{C9E58DB9-CAC3-4FAC-BD85-8648DFE477A8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{23F7AB8B-247E-4C5E-BCB8-F28000E9E20D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23F7AB8B-247E-4C5E-BCB8-F28000E9E20D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9E58DB9-CAC3-4FAC-BD85-8648DFE477A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9E58DB9-CAC3-4FAC-BD85-8648DFE477A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A80C28B7-C392-4FDB-92B9-77A972B87CB4}
+	EndGlobalSection
+EndGlobal
