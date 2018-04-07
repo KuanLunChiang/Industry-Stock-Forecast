@@ -5,7 +5,7 @@
     <ProjectGuid>23f7ab8b-247e-4c5e-bcb8-f28000e9e20d</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>Industry_Stock_Forecast.py</StartupFile>
-    <SearchPath>..\..\..\..\..\..\GitRepos\Finance\Big-data-and-Finance\Presentation\Time_Series_CV</SearchPath>
+    <SearchPath>..\..\..\..\..\..\..\..\..\Desktop\Time_Series.zip</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Industry_Stock_Forecast</Name>
