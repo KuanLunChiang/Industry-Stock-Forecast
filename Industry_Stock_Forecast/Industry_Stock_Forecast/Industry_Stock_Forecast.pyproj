@@ -5,7 +5,8 @@
     <ProjectGuid>23f7ab8b-247e-4c5e-bcb8-f28000e9e20d</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>Industry_Stock_Forecast.py</StartupFile>
-    <SearchPath>..\..\..\..\..\..\..\..\..\Desktop\Time_Series.zip</SearchPath>
+    <SearchPath>
+    </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Industry_Stock_Forecast</Name>
@@ -22,6 +23,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Industry_Stock_Forecast.py" />
+    <Compile Include="Time_Series\CrossValidation.py" />
+    <Compile Include="Time_Series\Report.py" />
+    <Compile Include="Time_Series\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\..\GitRepos\Finance\Big-data-and-Finance\Presentation\Time_Series_CV\Time_Series_CV.pyproj">
@@ -32,9 +36,17 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
+    <Folder Include="Time_Series\" />
+    <Folder Include="Time_Series\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data\Data_2018.csv" />
+    <Content Include="Time_Series\__pycache__\class1.cpython-36.pyc" />
+    <Content Include="Time_Series\__pycache__\class2.cpython-36.pyc" />
+    <Content Include="Time_Series\__pycache__\CrossValidation.cpython-36.pyc" />
+    <Content Include="Time_Series\__pycache__\Report.cpython-36.pyc" />
+    <Content Include="Time_Series\__pycache__\Time_Horizon.cpython-36.pyc" />
+    <Content Include="Time_Series\__pycache__\__init__.cpython-36.pyc" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />

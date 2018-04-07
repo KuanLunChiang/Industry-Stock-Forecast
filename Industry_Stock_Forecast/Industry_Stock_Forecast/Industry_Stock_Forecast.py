@@ -3,9 +3,10 @@ from Time_Series import Report as rpt
 import pandas as pd
 import numpy as np
 
-_data = pd.read_csv(r"C:\Users\USER\Documents\Imperial College London\Spring Module\Big Data and Finane\Assignment\A3\Industry_Stock_Forecast\Industry_Stock_Forecast\Data\Data_2018.csv")
+_data = pd.read_csv(r"C:\Users\USER\Documents\Imperial College London\Spring Module\Big Data and Finane\Assignment\A3\Industry-Stock-Forecast\Industry_Stock_Forecast\Industry_Stock_Forecast\Data\Data_2018.csv")
 _data = _data.drop('Unnamed: 0', axis = 1)
 _data.describe()
+
 ########### Class Attribute ###########################################
 _colName = _data.columns.tolist()
 _dataDict = {}
@@ -48,3 +49,4 @@ from sklearn.linear_model import Lasso
 
 mdl = Lasso(normalize = True)
 tuneMdl = tcv.paralell_processing(mdl, _dataDict,_responseVar, _windowList, _paraList, 'alpha',_colName)  
+
