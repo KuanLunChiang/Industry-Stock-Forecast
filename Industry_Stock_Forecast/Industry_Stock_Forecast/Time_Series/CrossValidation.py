@@ -129,7 +129,7 @@ class sequential_grid_tune (object):
 
     from Time_Series.CrossValidation import grid_tune_parameter
 
-    def __init__(self, data, responseVar ,mdl, window , paramList, paramName , startPara = 0 , regress = True, fixed = True):
+    def __init__(self, data, responseVar ,mdl, window , paramList, paramName , startPara = 1 , regress = True, fixed = True):
 
         windowSelect = grid_tune_parameter(mdl,data, responseVar,window,[startPara],paramName,regress, fixed = fixed)
         size = [int(windowSelect.wsize)]
@@ -148,11 +148,12 @@ class paralell_processing (object):
 
     from Time_Series.CrossValidation import sequential_grid_tune, grid_tune_parameter
     from sklearn.externals.joblib import Parallel, delayed
-    def __init__(self, mdl, data, responseVar ,windowList, paramList, paraName,colName ,regress = True, fixed = True, greedy = True, n_jobs = -4, verbose = 50):
+    def __init__(self, mdl, data, responseVar ,windowList, paramList, paraName,colName ,regress = True, fixed = True, greedy = True, n_jobs = -4, verbose = 50, backend = 'threading'):
         errorList = {}
         wisize = {}
         prdList= {}
-        report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = 'threading')(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy) for i in colName)
+        colName = colName
+        report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = backend)(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy) for i in colName)
         for i in colName:
             errorList[i] = report[colName.index(i)]['el']
             wisize[i] =report[colName.index(i)]['tune']
@@ -168,20 +169,21 @@ class paralell_processing (object):
 
         
     def paralell_support (self,name ,mdl, data, responseVar , regress , windowList, paramList, paraName, fixed, greedy):
-        
         tune_res = pd.DataFrame()
         el = []
+        name = name
         mdl = mdl
+        rsp = responseVar
         if greedy:
-            sq = sequential_grid_tune(data[name],responseVar,mdl, window = windowList, paramList = paramList, paramName = paraName, startPara = 0, regress = regress, fixed = fixed)
+            sq = sequential_grid_tune(data = data[name],responseVar = rsp,mdl = mdl, window = windowList, paramList = paramList, paramName = paraName, startPara = 1, regress = regress, fixed = fixed)
         else:
-            sq = grid_tune_parameter(mdl = mdl, data = data[name], responseVar = responsVar, window = windowList, paramList = paramList, paramName = paraName, regress = regress, fixed = fixed)
+            sq = grid_tune_parameter(mdl = mdl, data = data[name], responseVar = rsp, window = windowList, paramList = paramList, paramName = paraName, regress = regress, fixed = fixed)
         se = sq.error2
         tuned = sq.tuned
         para = sq.para
         wsize = sq.wsize
         prdList = sq.prdList
-        tune_res = tune_res.append({'Window_size': wsize, 'Currency': name, 'para': para},ignore_index= True)
+        tune_res = tune_res.append({'Window_size': wsize, 'Name': name, 'para': para},ignore_index= True)
         el= se
         return {'tune': tune_res, 'el':el, 'prd':prdList}
 

@@ -11,8 +11,11 @@ _data.describe()
 _colName = _data.columns.tolist()
 _dataDict = {}
 _responseVar = 'target'
-_windowList = [1,2,3]
+_windowList = [80]
 _paraList = [1,2,3]
+_trainDict = {}
+_testDict = {}
+
 ########### Variable Construction ##########################
 def varCons (data, colName, target):
     df = pd.DataFrame()
@@ -30,23 +33,16 @@ for i in _colName:
 
 assert len(_dataDict) == len(_colName)
 
+################ Train and Test Split ############################################
+for i in _colName:
+    _trainDict[i] = _dataDict[i].iloc[0:800]
+    _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
+######################### SVM #########################################
+from sklearn.svm import SVR
+mdl = SVR(kernel = 'rbf', cache_size = 2000)
+res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing')
+res.report_tuned
 
-############### PCA ##########################################
-from sklearn.decomposition import PCA, KernelPCA
-pca = PCA(whiten = True)
-
-pca.fit(_dataDict['Agric'].drop(_responseVar, axis = 1))
-pca.explained_variance_ratio_.cumsum()
-pca.n_components_
-pca.n_features_
-pca.n_samples_
-len(pca.components_)
-
-
-################## LASSO ##########################################
-from sklearn.linear_model import Lasso
-
-mdl = Lasso(normalize = True)
-tuneMdl = tcv.paralell_processing(mdl, _dataDict,_responseVar, _windowList, _paraList, 'alpha',_colName)  
-
+########################### PCA Reg ######################################
+from sklearn.decomposition import PCA
