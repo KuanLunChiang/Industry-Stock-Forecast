@@ -22,7 +22,19 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Dimensionality_Reduction\SubsetSelection.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Dimensionality_Reduction\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Industry_Stock_Forecast.py" />
+    <Compile Include="Test Script\Dimensionality_Test.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Test Script\test_dim.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Time_Series\CrossValidation.py" />
     <Compile Include="Time_Series\Report.py" />
     <Compile Include="Time_Series\__init__.py" />
@@ -36,6 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
+    <Folder Include="Dimensionality_Reduction\" />
+    <Folder Include="Test Script\" />
     <Folder Include="Time_Series\" />
     <Folder Include="Time_Series\__pycache__\" />
   </ItemGroup>
