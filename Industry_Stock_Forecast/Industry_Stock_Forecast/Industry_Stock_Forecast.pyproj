@@ -22,6 +22,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Dimensionality_Reduction\DimCrossValidation.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Dimensionality_Reduction\SubsetSelection.py">
       <SubType>Code</SubType>
     </Compile>

@@ -25,7 +25,7 @@ class Lasso_Selection (SubsetSelection):
         self.coefM = pd.DataFrame({'name': self.coefN,'coef': self.coef})
         self.selectCoef = self.coefM.loc[np.abs(self.coefM.coef) > threshold]
         self.selectFeatures = self.selectCoef.name
-        return None
+        
 
 class RandomForest_Selection (SubsetSelection):
 

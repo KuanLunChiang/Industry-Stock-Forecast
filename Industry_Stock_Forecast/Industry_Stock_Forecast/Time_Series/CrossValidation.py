@@ -1,7 +1,32 @@
 
 import pandas as pd
+from Dimensionality_Reduction.SubsetSelection import *
 import numpy as np
 from sklearn.externals.joblib import Parallel, delayed
+
+
+
+
+
+class Feature_Selection_Tune (object):
+    def __init__(self, data, responseVar = 'target' ,para = np.arange(0.0001,0.001,0.0001), dr = 'Lasso'):
+        if dr == 'Lasso':
+            sf = Lasso_Selection(data, para)
+            self.selectFeatures = [responseVar] + sf.selectFeatures.tolist()
+            if len(self.selectFeatures) > 1:
+                self.data = data[self.selectFeatures]
+            else:
+                self.data = data
+        elif dr == 'rf':
+            sf = RandomForest_Selection(data,para)
+            self.selectFeatures = [responseVar] + sf.selectFeatures.tolist()
+            self.data = data[self.selectFeatures]
+        elif dr == 'None':
+            self.data = data
+
+
+
+
 
 class rolling_Horizon(object):
     """ 
@@ -11,7 +36,8 @@ class rolling_Horizon(object):
     Classification is based on the prediction results of the regression function, and then classified by its qualtitiles.
     """
 
-    def __init__(self, mdl, data, responseVar ,wsize=4 , startInd=0, regress = True, fixed = True):
+    def __init__(self, mdl, data, responseVar ,wsize=4 , startInd=0, regress = True, fixed = True, para = np.arange(0.0001,0.001,0.0001), dr = 'None'):
+        from Time_Series.CrossValidation import Feature_Selection_Tune
         self.error2 = []
         self.prdList = []
         self.wsize = wsize
@@ -19,14 +45,19 @@ class rolling_Horizon(object):
         for i in range(startInd,len(data)):
             rlg = mdl
             if fixed:
-                trainx = data[i:i + wsize].drop(responseVar, axis = 1)
-                trainy = data[i:i + wsize][responseVar]
+                sfdata = Feature_Selection_Tune(data[i:i + wsize+1],responseVar,para,dr).data
+                trainx = sfdata.head(wsize).drop(responseVar, axis = 1)
+                trainy = sfdata.head(wsize)[responseVar]
+                testx = sfdata.tail(1).drop(responseVar, axis = 1).copy()
+                testy = sfdata.tail(1)[responseVar].values.copy()
+                
             else:
-                trainx = data[startInd:i + wsize].drop(responseVar, axis = 1)
-                trainy = data[startInd:i + wsize][responseVar]
+                sfdata = Feature_Selection_Tune(data[startInd:i + wsize+1],responseVar,para,dr).data
+                trainx = sfdata.head(wsize).drop(responseVar, axis = 1)
+                trainy = sfdata.head(wsize)[responseVar]
+                testx = sfdata.tail(1).drop(responseVar, axis = 1).copy()
+                testy = sfdata.tail(1)[responseVar].values.copy()
             rlg.fit(trainx,trainy)
-            testx = data[i + wsize:i + wsize + 1].drop(responseVar, axis = 1).copy()
-            testy = data[i + wsize:i + wsize + 1][responseVar].values.copy()
             prd = rlg.predict(testx)
         
             if regress:
@@ -68,16 +99,16 @@ class rolling_cv(object):
     from Time_Series.CrossValidation import rolling_Horizon
 
 
-    def __init__(self, data, responsVar ,mdl,windowList, regress = True, fixed = True):
+    def __init__(self, data, responsVar ,mdl,windowList, regress = True, fixed = True, para = np.arange(0.0001,0.001,0.0001), dr = 'None'):
         rmse = {}
         wsize = 0
         for w in windowList:
-             rh = rolling_Horizon(mdl = mdl, data = data, responseVar = responsVar ,wsize = w, startInd = 0,regress = regress, fixed = fixed)
+             rh = rolling_Horizon(mdl = mdl, data = data, responseVar = responsVar ,wsize = w, startInd = 0,regress = regress, fixed = fixed, para = para, dr = dr)
              error2 = rh.error2
              prd = rh.prdList
              rmse[w] = np.sqrt(np.mean(np.cumsum(error2)))
         wsize = min(rmse, key = rmse.get)
-        rh = rolling_Horizon(mdl = mdl, data = data,responseVar = responsVar, wsize= wsize, startInd = 0 , regress = regress, fixed = fixed )
+        rh = rolling_Horizon(mdl = mdl, data = data,responseVar = responsVar, wsize= wsize, startInd = 0 , regress = regress, fixed = fixed , para = para, dr = dr)
         se = rh.error2
         prdList = rh.prdList
         rmse = np.sqrt(np.mean(np.cumsum(se)))
@@ -100,14 +131,14 @@ class grid_tune_parameter (object):
 
     from Time_Series.CrossValidation import rolling_cv
     
-    def __init__(self, mdl, data, responseVar, window, paramList , paramName, regress = True, fixed = True):
+    def __init__(self, mdl, data, responseVar, window, paramList , paramName, regress = True, fixed = True, dr = 'None'):
         tuneSelection = pd.DataFrame(columns = ['param','window','rmse'])
         sse = {}
         prdList = {}
         for i in paramList:
             sizeselect = {}
             setattr(mdl,paramName,i)
-            rc = rolling_cv(data, responseVar, mdl,window, regress,fixed = fixed)
+            rc = rolling_cv(data, responseVar, mdl,window, regress,fixed = fixed, para = paramList, dr = dr)
             se = rc.error2
             rmse = rc.rmse 
             wsize = rc.bestWindow 
@@ -129,11 +160,11 @@ class sequential_grid_tune (object):
 
     from Time_Series.CrossValidation import grid_tune_parameter
 
-    def __init__(self, data, responseVar ,mdl, window , paramList, paramName , startPara = 1 , regress = True, fixed = True):
+    def __init__(self, data, responseVar ,mdl, window , paramList, paramName , startPara = 1 , regress = True, fixed = True, dr = 'None'):
 
-        windowSelect = grid_tune_parameter(mdl,data, responseVar,window,[startPara],paramName,regress, fixed = fixed)
+        windowSelect = grid_tune_parameter(mdl,data, responseVar,window,[startPara],paramName,regress, fixed = fixed, dr = dr)
         size = [int(windowSelect.wsize)]
-        paraSelect = grid_tune_parameter(mdl,data,responseVar,size,paramList,paramName, regress, fixed = fixed)
+        paraSelect = grid_tune_parameter(mdl,data,responseVar,size,paramList,paramName, regress, fixed = fixed, dr = dr)
         self.tuned = paraSelect.tuned
         self.para = paraSelect.para
         self.wsize = paraSelect.wsize
@@ -148,12 +179,12 @@ class paralell_processing (object):
 
     from Time_Series.CrossValidation import sequential_grid_tune, grid_tune_parameter
     from sklearn.externals.joblib import Parallel, delayed
-    def __init__(self, mdl, data, responseVar ,windowList, paramList, paraName,colName ,regress = True, fixed = True, greedy = True, n_jobs = -4, verbose = 50, backend = 'threading'):
+    def __init__(self, mdl, data, responseVar ,windowList, paramList, paraName,colName ,regress = True, fixed = True, greedy = True, n_jobs = -4, verbose = 50, backend = 'threading', dr = 'None'):
         errorList = {}
         wisize = {}
         prdList= {}
         colName = colName
-        report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = backend)(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy) for i in colName)
+        report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = backend)(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy, dr) for i in colName)
         for i in colName:
             errorList[i] = report[colName.index(i)]['el']
             wisize[i] =report[colName.index(i)]['tune']
@@ -168,16 +199,16 @@ class paralell_processing (object):
         self.report_tuned = report_tuned
 
         
-    def paralell_support (self,name ,mdl, data, responseVar , regress , windowList, paramList, paraName, fixed, greedy):
+    def paralell_support (self,name ,mdl, data, responseVar , regress , windowList, paramList, paraName, fixed, greedy, dr):
         tune_res = pd.DataFrame()
         el = []
         name = name
         mdl = mdl
         rsp = responseVar
         if greedy:
-            sq = sequential_grid_tune(data = data[name],responseVar = rsp,mdl = mdl, window = windowList, paramList = paramList, paramName = paraName, startPara = 1, regress = regress, fixed = fixed)
+            sq = sequential_grid_tune(data = data[name],responseVar = rsp,mdl = mdl, window = windowList, paramList = paramList, paramName = paraName, startPara = 1, regress = regress, fixed = fixed, dr = dr)
         else:
-            sq = grid_tune_parameter(mdl = mdl, data = data[name], responseVar = rsp, window = windowList, paramList = paramList, paramName = paraName, regress = regress, fixed = fixed)
+            sq = grid_tune_parameter(mdl = mdl, data = data[name], responseVar = rsp, window = windowList, paramList = paramList, paramName = paraName, regress = regress, fixed = fixed, dr = dr)
         se = sq.error2
         tuned = sq.tuned
         para = sq.para
