@@ -6,8 +6,6 @@ from sklearn.externals.joblib import Parallel, delayed
 
 
 
-
-
 class Feature_Selection_Tune (object):
     def __init__(self, data, responseVar = 'target' ,para = np.arange(0.0001,0.001,0.0001), dr = 'Lasso'):
         if dr == 'Lasso':
@@ -26,8 +24,6 @@ class Feature_Selection_Tune (object):
 
 
 
-
-
 class rolling_Horizon(object):
     """ 
     The core class that performs the time sereis cross validation. 
@@ -42,6 +38,7 @@ class rolling_Horizon(object):
         self.prdList = []
         self.wsize = wsize
         self.startInd = startInd
+        self.coefSelection = {}
         for i in range(startInd,len(data)):
             rlg = mdl
             if fixed:
@@ -59,7 +56,7 @@ class rolling_Horizon(object):
                 testy = sfdata.tail(1)[responseVar].values.copy()
             rlg.fit(trainx,trainy)
             prd = rlg.predict(testx)
-        
+            self.coefSelection[i]= trainx.columns.tolist()
             if regress:
                 self.error2.append(((testy[0] - prd[0]) ** 2))
                 self.prdList.append(prd[0])
@@ -99,16 +96,16 @@ class rolling_cv(object):
     from Time_Series.CrossValidation import rolling_Horizon
 
 
-    def __init__(self, data, responsVar ,mdl,windowList, regress = True, fixed = True, para = np.arange(0.0001,0.001,0.0001), dr = 'None'):
+    def __init__(self, data, responsVar ,mdl,windowList, regress = True, fixed = True, para = np.arange(0.0001,0.001,0.0001), dr = 'None', drparam = np.arange(0.0001,0.001,0.0001)):
         rmse = {}
         wsize = 0
         for w in windowList:
-             rh = rolling_Horizon(mdl = mdl, data = data, responseVar = responsVar ,wsize = w, startInd = 0,regress = regress, fixed = fixed, para = para, dr = dr)
+             rh = rolling_Horizon(mdl = mdl, data = data, responseVar = responsVar ,wsize = w, startInd = 0,regress = regress, fixed = fixed, para = drparam, dr = dr)
              error2 = rh.error2
              prd = rh.prdList
              rmse[w] = np.sqrt(np.mean(np.cumsum(error2)))
         wsize = min(rmse, key = rmse.get)
-        rh = rolling_Horizon(mdl = mdl, data = data,responseVar = responsVar, wsize= wsize, startInd = 0 , regress = regress, fixed = fixed , para = para, dr = dr)
+        rh = rolling_Horizon(mdl = mdl, data = data,responseVar = responsVar, wsize= wsize, startInd = 0 , regress = regress, fixed = fixed , para = drparam, dr = dr)
         se = rh.error2
         prdList = rh.prdList
         rmse = np.sqrt(np.mean(np.cumsum(se)))
@@ -120,7 +117,7 @@ class rolling_cv(object):
         self.windowList = windowList
         self.isRegress = regress
         self.isFixed = fixed
-
+        self.coefSelection = rh.coefSelection
 
 
 class grid_tune_parameter (object):
@@ -131,25 +128,29 @@ class grid_tune_parameter (object):
 
     from Time_Series.CrossValidation import rolling_cv
     
-    def __init__(self, mdl, data, responseVar, window, paramList , paramName, regress = True, fixed = True, dr = 'None'):
+    def __init__(self, mdl, data, responseVar, window, paramList , paramName, regress = True, fixed = True, dr = 'None', drparam = np.arange(0.0001,0.001,0.0001)):
         tuneSelection = pd.DataFrame(columns = ['param','window','rmse'])
         sse = {}
         prdList = {}
+        coefSelection = {}
         for i in paramList:
             sizeselect = {}
             setattr(mdl,paramName,i)
-            rc = rolling_cv(data, responseVar, mdl,window, regress,fixed = fixed, para = paramList, dr = dr)
+            rc = rolling_cv(data, responseVar, mdl,window, regress,fixed = fixed, para = paramList, dr = dr, drparam = drparam)
             se = rc.error2
             rmse = rc.rmse 
             wsize = rc.bestWindow 
             prdList[i] = rc.prdList
             tuneSelection = tuneSelection.append({'param':i,'window':wsize,'rmse':rmse},ignore_index=True)
             sse[i] = se
+            coefSelection[i] = rc.coefSelection
         self.tuned = tuneSelection.iloc[tuneSelection.rmse.idxmin()]
         self.para = self.tuned.param
         self.wsize = self.tuned.window
         self.error2 = sse[self.tuned.param]
         self.prdList = prdList[self.tuned.param]
+        self.coefSelection = coefSelection[self.tuned.param]
+        
 
 class sequential_grid_tune (object):
     """
@@ -160,16 +161,17 @@ class sequential_grid_tune (object):
 
     from Time_Series.CrossValidation import grid_tune_parameter
 
-    def __init__(self, data, responseVar ,mdl, window , paramList, paramName , startPara = 1 , regress = True, fixed = True, dr = 'None'):
+    def __init__(self, data, responseVar ,mdl, window , paramList, paramName , startPara = 1 , regress = True, fixed = True, dr = 'None', drparam = np.arange(0.0001,0.001,0.0001)):
 
-        windowSelect = grid_tune_parameter(mdl,data, responseVar,window,[startPara],paramName,regress, fixed = fixed, dr = dr)
+        windowSelect = grid_tune_parameter(mdl,data, responseVar,window,[startPara],paramName,regress, fixed = fixed, dr = dr, drparam = drparam)
         size = [int(windowSelect.wsize)]
-        paraSelect = grid_tune_parameter(mdl,data,responseVar,size,paramList,paramName, regress, fixed = fixed, dr = dr)
+        paraSelect = grid_tune_parameter(mdl,data,responseVar,size,paramList,paramName, regress, fixed = fixed, dr = dr, drparam = drparam)
         self.tuned = paraSelect.tuned
         self.para = paraSelect.para
         self.wsize = paraSelect.wsize
         self.error2 = paraSelect.error2
         self.prdList = paraSelect.prdList
+        self.coefSelection = paraSelect.coefSelection
 
 
 class paralell_processing (object):
@@ -179,19 +181,22 @@ class paralell_processing (object):
 
     from Time_Series.CrossValidation import sequential_grid_tune, grid_tune_parameter
     from sklearn.externals.joblib import Parallel, delayed
-    def __init__(self, mdl, data, responseVar ,windowList, paramList, paraName,colName ,regress = True, fixed = True, greedy = True, n_jobs = -4, verbose = 50, backend = 'threading', dr = 'None'):
+    def __init__(self, mdl, data, responseVar ,windowList, paramList, paraName,colName ,regress = True, fixed = True, greedy = True, n_jobs = -4, verbose = 50, backend = 'threading', dr = 'None', drparam = np.arange(0.0001,0.001,0.0001)):
         errorList = {}
         wisize = {}
         prdList= {}
+        coefList = {}
         colName = colName
-        report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = backend)(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy, dr) for i in colName)
+        report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = backend)(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy, dr, drparam) for i in colName)
         for i in colName:
             errorList[i] = report[colName.index(i)]['el']
             wisize[i] =report[colName.index(i)]['tune']
             prdList[i] = report[colName.index(i)]['prd']
+            coefList[i] = report[colName.index(i)]['coef']
         self.errorList = errorList
         self.wisize = wisize
         self.prdList = prdList
+        self.coefList = coefList
         report_tuned = pd.DataFrame()
         for i in range(len(colName)):
             report_tuned = report_tuned.append(self.wisize[colName[i]])
@@ -199,16 +204,16 @@ class paralell_processing (object):
         self.report_tuned = report_tuned
 
         
-    def paralell_support (self,name ,mdl, data, responseVar , regress , windowList, paramList, paraName, fixed, greedy, dr):
+    def paralell_support (self,name ,mdl, data, responseVar , regress , windowList, paramList, paraName, fixed, greedy, dr, drparam):
         tune_res = pd.DataFrame()
         el = []
         name = name
         mdl = mdl
         rsp = responseVar
         if greedy:
-            sq = sequential_grid_tune(data = data[name],responseVar = rsp,mdl = mdl, window = windowList, paramList = paramList, paramName = paraName, startPara = 1, regress = regress, fixed = fixed, dr = dr)
+            sq = sequential_grid_tune(data = data[name],responseVar = rsp,mdl = mdl, window = windowList, paramList = paramList, paramName = paraName, startPara = 1, regress = regress, fixed = fixed, dr = dr, drparam = drparam)
         else:
-            sq = grid_tune_parameter(mdl = mdl, data = data[name], responseVar = rsp, window = windowList, paramList = paramList, paramName = paraName, regress = regress, fixed = fixed, dr = dr)
+            sq = grid_tune_parameter(mdl = mdl, data = data[name], responseVar = rsp, window = windowList, paramList = paramList, paramName = paraName, regress = regress, fixed = fixed, dr = dr, drparam = drparam)
         se = sq.error2
         tuned = sq.tuned
         para = sq.para
@@ -216,7 +221,8 @@ class paralell_processing (object):
         prdList = sq.prdList
         tune_res = tune_res.append({'Window_size': wsize, 'Name': name, 'para': para},ignore_index= True)
         el= se
-        return {'tune': tune_res, 'el':el, 'prd':prdList}
+        coefSelection = sq.coefSelection
+        return {'tune': tune_res, 'el':el, 'prd':prdList, 'coef': coefSelection}
 
 
 class benchMark (object):
