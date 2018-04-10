@@ -41,7 +41,7 @@ for i in _colName:
 ######################### SVM #########################################
 from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 10000)
-res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 8, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0,1,1))
+res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 8, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.0001,0.001,0.0001))
 res.report_tuned
-res.coefList['Food']
-
+x = res.coefList['Food']
+x
