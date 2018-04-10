@@ -35,13 +35,25 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
+<<<<<<< HEAD
+    _trainDict[i] = _dataDict[i].iloc[0:1000]
+=======
     _trainDict[i] = _dataDict[i].iloc[0:100]
+>>>>>>> d9f526e3d02fc6f241218244f9b2d95998afecdd
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 ######################### SVM #########################################
 from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 10000)
+<<<<<<< HEAD
 res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 8, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.0001,0.001,0.0001))
+=======
+<<<<<<< HEAD
+res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'None')
+=======
+res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 8, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0,1,1))
+>>>>>>> d9f526e3d02fc6f241218244f9b2d95998afecdd
+>>>>>>> bf47e9f14def1c2a4cd80fe495050616e9c13b75
 res.report_tuned
 x = res.coefList['Food']
 x
