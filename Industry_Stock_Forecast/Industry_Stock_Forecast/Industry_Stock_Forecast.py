@@ -35,13 +35,13 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
-    _trainDict[i] = _dataDict[i].iloc[0:200]
+    _trainDict[i] = _dataDict[i].iloc[0:1000]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 ######################### SVM #########################################
 from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 10000)
-res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'Lasso')
+res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'None')
 res.report_tuned
 
 
