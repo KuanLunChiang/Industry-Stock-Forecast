@@ -47,10 +47,6 @@ class RandomForest_Selection (SubsetSelection):
         self.selectFeatures = self.selectCoef.name
 
 
-
-
-
-### Need Debug, not finished
 class PCA_Selection (SubsetSelection):
     def __init__(self, mdl, data, response = 'target'):
         from Time_Series.CrossValidation import grid_tune_parameter
@@ -58,17 +54,30 @@ class PCA_Selection (SubsetSelection):
         from sklearn.decomposition import PCA
         pca = PCA()
         super().__init__(mdl, data, response)
-        trx = StandardScaler().fit_transform(X = self.datax[0:len(self.datax)-1])
+        trx = StandardScaler().fit_transform(X = data[0:len(self.datax)-1])
+        testx = self.datax.tail(1)
+        testy = self.datay.tail(1)
         pc = pca.fit(trx).components_
         pcDict = {}
         for i in range(1,len(pc)):
-            trainx = pc[0:i]
-            trainy = self.datay[0:i]
-            testx = pc[len(pc)-1]
-            testy = self.datay[len(self.datay)-1]
-            trainx = pca.inverse_transform(trainx)
-            mdl.fit(pca.inverse_transform(trainx),trainy)
+            invPC = pca.inverse_transform(pc[0:i])
+            fitx = pd.DataFrame(columns = data.columns.tolist())
+            for j in range(len(invPC)):
+                tempdf = pd.DataFrame(invPC[j].reshape(1,49),columns = data.columns.tolist())
+                fitx = fitx.append(tempdf, True)
+            trainx = fitx.drop(response, axis = 1)
+            trainy = fitx[response]
+            mdl.fit(trainx,trainy)
             pcDict[i] = mdl.score(testx,testy)
         self.pcNum = max(pcDict,key = pcDict.get)
         self.PC = pc
-        self.selecteFeatures = pc[0:self.pcNum]
+        tempx = {}
+        for i in range(self.pcNum):
+            tempx['PC'+ str(i+1)] = pc[i]
+        self.selectPC = pd.DataFrame(tempx)
+        self.selectFeatures = self.selectPC.columns.tolist()
+        self.threshold = self.pcNum
+        self.coef = pd.DataFrame(columns = data.columns.tolist())
+        for j in range(self.pcNum):
+            tempdf = pd.DataFrame(pca.inverse_transform(self.PC[j]).reshape(1,49),columns = data.columns.tolist())
+            self.coef = self.coef.append(tempdf,True)

@@ -7,18 +7,23 @@ from sklearn.externals.joblib import Parallel, delayed
 
 
 class Feature_Selection_Tune (object):
-    def __init__(self, data, responseVar = 'target' ,para = np.arange(0.0001,0.001,0.0001), dr = 'Lasso'):
+    def __init__(self,mdl, data, responseVar = 'target' ,para = np.arange(0.0001,0.001,0.0001), dr = 'Lasso'):
         if dr == 'Lasso':
-            sf = Lasso_Selection(data, para)
+            sf = Lasso_Selection(data, para, response = responseVar)
             self.selectFeatures = [responseVar] + sf.selectFeatures.tolist()
             if len(self.selectFeatures) > 1:
                 self.data = data[self.selectFeatures]
             else:
                 self.data = data
         elif dr == 'rf':
-            sf = RandomForest_Selection(data,para)
+            sf = RandomForest_Selection(data,para, response = responseVar)
             self.selectFeatures = [responseVar] + sf.selectFeatures.tolist()
             self.data = data[self.selectFeatures]
+        elif dr == 'PCA':
+            sf = PCA_Selection(mdl,data, responseVar)
+            self.selectFeatures = [responseVar] + sf.selectFeatures
+            self.data = sf.coef
+
         elif dr == 'None':
             self.data = data
 
@@ -32,6 +37,8 @@ class rolling_Horizon(object):
     Classification is based on the prediction results of the regression function, and then classified by its qualtitiles.
     """
 
+
+
     def __init__(self, mdl, data, responseVar ,wsize=4 , startInd=0, regress = True, fixed = True, para = np.arange(0.0001,0.001,0.0001), dr = 'None'):
         from Time_Series.CrossValidation import Feature_Selection_Tune
         self.error2 = []
@@ -41,19 +48,7 @@ class rolling_Horizon(object):
         self.coefSelection = {}
         for i in range(startInd,len(data)):
             rlg = mdl
-            if fixed:
-                sfdata = Feature_Selection_Tune(data[i:i + wsize+1],responseVar,para,dr).data
-                trainx = sfdata.head(wsize).drop(responseVar, axis = 1)
-                trainy = sfdata.head(wsize)[responseVar]
-                testx = sfdata.tail(1).drop(responseVar, axis = 1).copy()
-                testy = sfdata.tail(1)[responseVar].values.copy()
-                
-            else:
-                sfdata = Feature_Selection_Tune(data[startInd:i + wsize+1],responseVar,para,dr).data
-                trainx = sfdata.head(wsize).drop(responseVar, axis = 1)
-                trainy = sfdata.head(wsize)[responseVar]
-                testx = sfdata.tail(1).drop(responseVar, axis = 1).copy()
-                testy = sfdata.tail(1)[responseVar].values.copy()
+            testx, testy, trainx, trainy = self.data_prep(data, dr, fixed, i, mdl, para, responseVar, startInd, wsize)
             rlg.fit(trainx,trainy)
             prd = rlg.predict(testx)
             self.coefSelection[i]= trainx.columns.tolist()
@@ -72,6 +67,38 @@ class rolling_Horizon(object):
                 break
         assert len(data) == self.wsize + len(self.error2) + self.startInd
         assert len(self.error2) == len(data) - (self.startInd + self.wsize)
+
+
+    def data_prep(self, data, dr, fixed, i, mdl, para, responseVar, startInd, wsize):
+        if fixed:
+            if dr == 'PCA':
+                sfdata = Feature_Selection_Tune(mdl,data[i:i + wsize+1],responseVar,para,dr).data
+                trainx = sfdata.head(wsize).drop(responseVar, axis = 1)
+                trainy = sfdata.head(wsize)[responseVar]
+                testx = data.iloc[0:wsize+1].drop(responseVar, axis = 1).tail(1).copy()
+                testy = data.iloc[0:wsize+1][responseVar].values.copy()
+            else:
+                sfdata = Feature_Selection_Tune(mdl,data[i:i + wsize+1],responseVar,para,dr).data
+                trainx = sfdata.head(wsize).drop(responseVar, axis = 1)
+                trainy = sfdata.head(wsize)[responseVar]
+                testx = sfdata.tail(1).drop(responseVar, axis = 1).copy()
+                testy = sfdata.tail(1)[responseVar].values.copy()
+            
+        else:
+            if dr == "PCA":
+                sfdata = Feature_Selection_Tune(mdl, data[startInd:i + wsize+1],responseVar,para,dr).data
+                trainx = sfdata.drop(responseVar, axis = 1)
+                trainy = sfdata[responseVar]
+                testx = data.iloc[0:wsize+1].drop(responseVar, axis = 1).tail(1).copy()
+                testy = data.iloc[0:wsize+1][responseVar].values.copy()
+            else:
+                sfdata = Feature_Selection_Tune(mdl, data[startInd:i + wsize+1],responseVar,para,dr).data
+                trainx = sfdata.head(wsize).drop(responseVar, axis = 1)
+                trainy = sfdata.head(wsize)[responseVar]
+                testx = sfdata.tail(1).drop(responseVar, axis = 1).copy()
+                testy = sfdata.tail(1)[responseVar].values.copy()
+        return testx, testy, trainx, trainy
+
 
     def percentile_transform_three_bin (self,data, testd, lb = 0.33, ub = 0.66):
         res = 0

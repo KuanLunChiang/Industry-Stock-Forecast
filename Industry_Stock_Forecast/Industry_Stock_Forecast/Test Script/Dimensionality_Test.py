@@ -51,4 +51,20 @@ from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 2000)
 train = _trainDict['Food']
 from Time_Series.CrossValidation import rolling_Horizon
-rolling_Horizon(mdl,train,_responseVar,4,0,True,True,np.arange(1,5,1),'Lasso')
+#rolling_Horizon(mdl,train,_responseVar,4,0,True,True,np.arange(1,5,1),'Lasso')
+from Dimensionality_Reduction.SubsetSelection import PCA_Selection
+
+pc = PCA_Selection(mdl,train,_responseVar)
+
+pc.selectFeatures
+pc.pcNum
+pc.PC
+pc.selectPC
+pc.coef
+
+mdl.fit(train)
+from Time_Series.CrossValidation import rolling_Horizon
+rolling_Horizon(mdl,train,_responseVar,80,0,True,True,np.arange(1,5,1),'PCA')
+
+
+train.loc[1:5].drop('target',axis =1).tail(1)
