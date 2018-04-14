@@ -208,7 +208,7 @@ class paralell_processing (object):
 
     from Time_Series.CrossValidation import sequential_grid_tune, grid_tune_parameter
     from sklearn.externals.joblib import Parallel, delayed
-    def __init__(self, mdl, data, responseVar ,windowList, paramList, paraName,colName ,regress = True, fixed = True, greedy = True, n_jobs = -4, verbose = 50, backend = 'threading', dr = 'None', drparam = np.arange(0.0001,0.001,0.0001)):
+    def __init__(self, mdl, data, responseVar ,windowList, paramList, paraName,colName ,regress = True, fixed = True, greedy = True, n_jobs = -4, verbose = 50, backend = 'multiproccessing', dr = 'None', drparam = np.arange(0.0001,0.001,0.0001)):
         errorList = {}
         wisize = {}
         prdList= {}
@@ -288,4 +288,16 @@ class benchMark (object):
         self.error2 = se
         self.prd = res
         return se
-
+    
+    def Linear_Regression (self, data, tuneReport, responseVar):
+        from sklearn.linear_model import LinearRegression
+        from Time_Series.CrossValidation import rolling_Horizon
+        lr = Linear_Regression()
+        self.error2 = {}
+        self.prd = {}
+        for i in data:
+            wsize = int(tuneReport.loc[tuneReport.Name == i].Window_size)
+            rh = rolling_Horizon(lr,data,responseVar,wsize)
+            self.error2[i] = rh.error2
+            self.prd[i] = rh.prdList
+  

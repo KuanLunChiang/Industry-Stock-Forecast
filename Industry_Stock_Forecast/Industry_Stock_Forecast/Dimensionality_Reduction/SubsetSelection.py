@@ -49,7 +49,6 @@ class RandomForest_Selection (SubsetSelection):
 
 class PCA_Selection (SubsetSelection):
     def __init__(self, mdl, data, response = 'target'):
-        from Time_Series.CrossValidation import grid_tune_parameter
         from sklearn.preprocessing import StandardScaler
         from sklearn.decomposition import PCA
         pca = PCA()
