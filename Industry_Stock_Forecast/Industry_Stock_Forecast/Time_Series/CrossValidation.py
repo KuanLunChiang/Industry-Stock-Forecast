@@ -292,12 +292,12 @@ class benchMark (object):
     def Linear_Regression (self, data, tuneReport, responseVar):
         from sklearn.linear_model import LinearRegression
         from Time_Series.CrossValidation import rolling_Horizon
-        lr = Linear_Regression()
+        lr = LinearRegression()
         self.error2 = {}
         self.prd = {}
         for i in data:
             wsize = int(tuneReport.loc[tuneReport.Name == i].Window_size)
-            rh = rolling_Horizon(lr,data,responseVar,wsize)
+            rh = rolling_Horizon(lr,data[i],responseVar,wsize)
             self.error2[i] = rh.error2
             self.prd[i] = rh.prdList
   

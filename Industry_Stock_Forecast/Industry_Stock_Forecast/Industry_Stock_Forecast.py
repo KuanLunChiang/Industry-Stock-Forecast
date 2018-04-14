@@ -42,14 +42,14 @@ for i in _colName:
 from sklearn.linear_model import Lasso
 mdl = Lasso(precompute = True, normalize = True)
 lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_colName,True,True,True,4,50, 'multiprocessing', "None")
-c = lasso_tune.report_tuned
-c.loc[c.Name == 'Food'].Window_size
+bch = tcv.benchMark()
+bch.Linear_Regression(_trainDict,lasso_tune.report_tuned,_responseVar)
 
-mx = lasso_tune.report_tuned.para.max()
-mn = lasso_tune.report_tuned.para.min()
-_lasso_range = np.arange(mn,mx,mn)
-if len(_lasso_range)<1:
-    _lasso_range = [mn]
+_reportDF = {}
+for i in _colName:
+    _reportDF[i] = rpt.cum_sse_report(lasso_tune.errorList[i],bch.error2[i]).reportDF
+_reportDF
+rpt.plot_differential_report(_colName,_reportDF,'SSEDif',6,8)
 
 ################### Random Forest #####################################################################
 from sklearn.ensemble import RandomForestRegressor
@@ -66,3 +66,8 @@ from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 10000)
 res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.00001,0.0001,0.00001))
 res.report_tuned
+
+
+
+######################### KNN ############################################
+from sklearn.neighbors import KNeighborsRegressor
