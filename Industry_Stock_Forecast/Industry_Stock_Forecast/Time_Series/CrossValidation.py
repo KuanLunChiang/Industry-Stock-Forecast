@@ -16,7 +16,7 @@ class Feature_Selection_Tune (object):
             else:
                 self.data = data
         elif dr == 'rf':
-            sf = RandomForest_Selection(data,para, response = responseVar)
+            sf = RandomForest_Selection(data, response = responseVar)
             self.selectFeatures = [responseVar] + sf.selectFeatures.tolist()
             self.data = data[self.selectFeatures]
         elif dr == 'PCA':

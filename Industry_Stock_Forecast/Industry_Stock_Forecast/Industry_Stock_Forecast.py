@@ -11,8 +11,8 @@ _data.describe()
 _colName = _data.columns.tolist()
 _dataDict = {}
 _responseVar = 'target'
-_windowList = [80]
-_paraList = np.arange(0.0001,0.0002,0.0001)
+_windowList = [40,60,80,90,100,110,120]
+_paraList = np.arange(0.0001,0.001,0.0001)
 _trainDict = {}
 _testDict = {}
 
@@ -35,7 +35,7 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
-    _trainDict[i] = _dataDict[i].iloc[0:100]
+    _trainDict[i] = _dataDict[i].iloc[0:10000]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 #################### LASSO ############################################################
@@ -55,11 +55,15 @@ rpt.outPutReport(rf_tune,'randomForest')
 
 ######################### SVM #########################################
 from sklearn.svm import SVR
-mdl = SVR(kernel = 'rbf', cache_size = 10000)
-res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.00001,0.0001,0.00001))
-res.report_tuned
-
-
+mdl = SVR(kernel = 'rbf', cache_size = 20000)
+res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
+rpt.outPutReport(res,'svm')
+res_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.00001,0.0001,0.00001))
+rpt.outPutReport(res_lasso,'svm_lasso')
+res_rf = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = np.arange(0.00001,0.0001,0.00001))
+rpt.outPutReport(res_rf,'svm_rf')
+res_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))
+rpt.outPutReport(res_pca,'svm_pca')
 
 ######################### KNN ############################################
 from sklearn.neighbors import KNeighborsRegressor
