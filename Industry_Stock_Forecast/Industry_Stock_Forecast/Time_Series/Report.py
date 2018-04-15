@@ -35,3 +35,18 @@ class plot_differential_report ():
         return plt.show()
 
 
+class outPutReport ():
+    
+    def __init__(self, mdl ,name):
+        coefDF = mdl.coefList
+        errorDF = mdl.errorList
+        winParaDF = mdl.report_tuned
+        self.json_output(coefDF,'.\\Output\\Coefficient\\'+name+'_coefficient'+'.txt')
+        self.json_output(errorDF,'.\\Output\\Error List\\'+name+'_errorList'+'.txt')
+        winParaDF.to_csv('.\\Output\\Window and Parameter\\'+name+'_winPara'+'.csv')
+
+
+    def json_output (self, data, output):
+        import json
+        with open(output, 'w') as outfile:
+            json.dump(data,outfile)
