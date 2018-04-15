@@ -45,30 +45,12 @@ lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_pa
 rpt.outPutReport(lasso_tune,'lasso')
 
 
-bch = tcv.benchMark()
-bch.Linear_Regression(_trainDict,lasso_tune.report_tuned,_responseVar)
-
-_reportDF = {}
-for i in _colName:
-    _reportDF[i] = rpt.cum_sse_report(lasso_tune.errorList[i],bch.error2[i]).reportDF
-_reportDF
-
-lasso_tune.report_tuned.to_csv(r'.\Output\LassoTune.csv')
-lasso_tune.errorList
-
-import json
-temp  = json.dumps(lasso_tune.errorList)
-with open('.\\Output\\SSE Report\\data.txt', 'w') as outfile:
-    json.dump(lasso_tune.errorList, outfile)
-
-
-
 ################### Random Forest #####################################################################
 from sklearn.ensemble import RandomForestRegressor
-mdl = RandomForestRegressor(n_estimators = 10, max_features = len(_colName))
+mdl = RandomForestRegressor(n_estimators = 2, max_features = len(_colName))
 _paraList = np.arange(1,len(_colName),1)
 rf_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'C',_colName,True,True,True,4,50, 'multiprocessing', "None")
-
+rpt.outPutReport(rf_tune,'randomForest')
 
 
 ######################### SVM #########################################

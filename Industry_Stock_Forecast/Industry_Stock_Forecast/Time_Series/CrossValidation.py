@@ -41,17 +41,34 @@ class rolling_Horizon(object):
 
     def __init__(self, mdl, data, responseVar ,wsize=4 , startInd=0, regress = True, fixed = True, para = np.arange(0.0001,0.001,0.0001), dr = 'None'):
         from Time_Series.CrossValidation import Feature_Selection_Tune
+        from sklearn.linear_model import Lasso
+        from sklearn.ensemble import RandomForestRegressor
         self.error2 = []
         self.prdList = []
         self.wsize = wsize
         self.startInd = startInd
         self.coefSelection = {}
+        colName = data.drop(responseVar,axis = 1).columns.tolist()
         for i in range(startInd,len(data)):
             rlg = mdl
             testx, testy, trainx, trainy = self.data_prep(data, dr, fixed, i, mdl, para, responseVar, startInd, wsize)
             rlg.fit(trainx,trainy)
             prd = rlg.predict(testx)
-            self.coefSelection[i]= trainx.columns.tolist()
+            if dr != 'None':
+                self.coefSelection[i]= trainx.columns.tolist()
+            else:
+                if isinstance(mdl, Lasso):
+                    coef = rlg.coef_
+                    coefM = pd.DataFrame({'name': colName,'coef': coef})
+                    selectCoef = coefM.loc[np.abs(coefM.coef) >= 0]
+                    selectFeatures = selectCoef.name
+                    self.coefSelection[i] = selectFeatures.tolist()
+                elif isinstance(mdl,RandomForestRegressor):
+                    coef = rlg.feature_importances_
+                    coefM = pd.DataFrame({'name': colName,'coef': coef})
+                    selectCoef = coefM.loc[np.abs(coefM.coef) > 0.5]
+                    selectFeatures = selectCoef.name
+                    self.coefSelection[i] = selectFeatures.tolist()
             if regress:
                 self.error2.append(((testy[0] - prd[0]) ** 2))
                 self.prdList.append(prd[0])

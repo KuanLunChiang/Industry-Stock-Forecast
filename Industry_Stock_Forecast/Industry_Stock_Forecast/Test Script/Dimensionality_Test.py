@@ -68,3 +68,19 @@ rolling_Horizon(mdl,train,_responseVar,80,0,True,True,np.arange(1,5,1),'PCA')
 
 
 train.loc[1:5].drop('target',axis =1).tail(1)
+
+
+from sklearn.linear_model import Lasso
+from sklearn import linear_model
+mdl = Lasso()
+mdl == Lasso()
+isinstance(mdl, linear_model)
+
+##################### Repos ###################################
+bch = tcv.benchMark()
+bch.Linear_Regression(_trainDict,lasso_tune.report_tuned,_responseVar)
+
+_reportDF = {}
+for i in _colName:
+    _reportDF[i] = rpt.cum_sse_report(lasso_tune.errorList[i],bch.error2[i]).reportDF
+_reportDF

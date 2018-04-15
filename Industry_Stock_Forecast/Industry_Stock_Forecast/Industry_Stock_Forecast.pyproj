@@ -53,13 +53,15 @@
     <Folder Include="Data\" />
     <Folder Include="Dimensionality_Reduction\" />
     <Folder Include="Output\" />
+    <Folder Include="Output\Coefficient\" />
+    <Folder Include="Output\Error List\" />
+    <Folder Include="Output\Window and Parameter\" />
     <Folder Include="Test Script\" />
     <Folder Include="Time_Series\" />
     <Folder Include="Time_Series\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data\Data_2018.csv" />
-    <Content Include="Output\LassoTune.csv" />
     <Content Include="Time_Series\__pycache__\class1.cpython-36.pyc" />
     <Content Include="Time_Series\__pycache__\class2.cpython-36.pyc" />
     <Content Include="Time_Series\__pycache__\CrossValidation.cpython-36.pyc" />

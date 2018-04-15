@@ -41,8 +41,8 @@ class outPutReport ():
         coefDF = mdl.coefList
         errorDF = mdl.errorList
         winParaDF = mdl.report_tuned
-        self.json_output(coefDF,'.\\Output\\Coefficient\\'+name+'_coefficient'+'.txt')
-        self.json_output(errorDF,'.\\Output\\Error List\\'+name+'_errorList'+'.txt')
+        self.json_output(coefDF,'.\\Output\\Coefficient\\'+name+'_coefficient'+'.json')
+        self.json_output(errorDF,'.\\Output\\Error List\\'+name+'_errorList'+'.json')
         winParaDF.to_csv('.\\Output\\Window and Parameter\\'+name+'_winPara'+'.csv')
 
 
