@@ -11,8 +11,8 @@ _data.describe()
 _colName = _data.columns.tolist()
 _dataDict = {}
 _responseVar = 'target'
-_windowList = [80]
-_paraList = np.arange(0.0001,0.0002,0.0001)
+_windowList = [80,90,100,120]
+_paraList = np.arange(0.0001,0.001,0.0001)
 _trainDict = {}
 _testDict = {}
 
@@ -35,29 +35,32 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
-    _trainDict[i] = _dataDict[i].iloc[0:100]
+    _trainDict[i] = _dataDict[i].iloc[0:10000]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 #################### LASSO ############################################################
 from sklearn.linear_model import Lasso
 mdl = Lasso(precompute = True, normalize = True)
-lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_colName,True,True,True,4,50, 'multiprocessing', "None")
+lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_colName,True,True,True,12,50, 'multiprocessing', "None")
 rpt.outPutReport(lasso_tune,'lasso')
 
 
 ################### Random Forest #####################################################################
 from sklearn.ensemble import RandomForestRegressor
-mdl = RandomForestRegressor(n_estimators = 2, max_features = len(_colName))
+mdl = RandomForestRegressor(n_estimators = 10, max_features = len(_colName))
 _paraList = np.arange(1,len(_colName),1)
-rf_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'C',_colName,True,True,True,4,50, 'multiprocessing', "None")
+rf_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'C',_colName,True,True,True,12,50, 'multiprocessing', "None")
 rpt.outPutReport(rf_tune,'randomForest')
 
 
 ######################### SVM #########################################
 from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 10000)
-res = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.00001,0.0001,0.00001))
-res.report_tuned
+svm_tune = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 12, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
+rpt.outPutReport(rf_tune,'SVM')
+svm_tune = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _colName, regress = True, fixed = True, greedy = True, n_jobs = 12, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.00001,0.0001,0.00001))
+rpt.outPutReport(rf_tune,'SVM_Lasso')
+
 
 
 
