@@ -3,7 +3,7 @@ from Time_Series import Report as rpt
 import pandas as pd
 import numpy as np
 
-_data = pd.read_csv(r"C:\Users\USER\Documents\Imperial College London\Spring Module\Big Data and Finane\Assignment\A3\Industry-Stock-Forecast\Industry_Stock_Forecast\Industry_Stock_Forecast\Data\Data_2018.csv")
+_data = pd.read_csv(r".\Data\Data_2018.csv")
 _data = _data.drop('Unnamed: 0', axis = 1)
 _data.describe()
 
@@ -49,6 +49,10 @@ _reportDF = {}
 for i in _colName:
     _reportDF[i] = rpt.cum_sse_report(lasso_tune.errorList[i],bch.error2[i]).reportDF
 _reportDF
+
+lasso_tune.report_tuned.to_csv(r'.\Output\LassoTune.csv')
+
+
 rpt.plot_differential_report(_colName,_reportDF,'SSEDif',6,8)
 
 ################### Random Forest #####################################################################
