@@ -29,7 +29,7 @@ class Lasso_Selection (SubsetSelection):
 
 class RandomForest_Selection (SubsetSelection):
 
-    def __init__(self, data, response = 'target', n_tree = 10,  threshold = 0.5):
+    def __init__(self, data, response = 'target', n_tree = 5,  threshold = 0.5):
         from Time_Series.CrossValidation import grid_tune_parameter
         from sklearn.ensemble import RandomForestRegressor
         mdl = RandomForestRegressor(n_estimators = n_tree)
