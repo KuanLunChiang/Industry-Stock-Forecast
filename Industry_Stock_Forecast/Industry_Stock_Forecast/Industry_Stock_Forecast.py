@@ -11,7 +11,8 @@ _data.describe()
 _colName = _data.columns.tolist()
 _dataDict = {}
 _responseVar = 'target'
-_windowList = [80,90,100,120]
+_windowList = [40,60,80,100,120]
+_targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _paraList = np.arange(0.0001,0.001,0.0001)
 _trainDict = {}
 _testDict = {}
@@ -41,7 +42,7 @@ for i in _colName:
 #################### LASSO ############################################################
 from sklearn.linear_model import Lasso
 mdl = Lasso(precompute = True, normalize = True)
-lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_colName,True,True,True,12,50, 'multiprocessing', "None")
+lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_targetCol,True,True,True,6,50, 'multiprocessing', "None")
 rpt.outPutReport(lasso_tune,'lasso')
 
 
