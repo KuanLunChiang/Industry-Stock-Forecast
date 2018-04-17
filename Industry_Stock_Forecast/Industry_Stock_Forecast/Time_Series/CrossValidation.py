@@ -146,14 +146,16 @@ class rolling_cv(object):
 
     def __init__(self, data, responsVar ,mdl,windowList, regress = True, fixed = True, para = np.arange(0.0001,0.001,0.0001), dr = 'None', drparam = np.arange(0.0001,0.001,0.0001)):
         rmse = {}
+        rhList = {}
         wsize = 0
         for w in windowList:
              rh = rolling_Horizon(mdl = mdl, data = data, responseVar = responsVar ,wsize = w, startInd = 0,regress = regress, fixed = fixed, para = drparam, dr = dr)
              error2 = rh.error2
              prd = rh.prdList
+             rhList[w] = rh
              rmse[w] = np.sqrt(np.mean(np.cumsum(error2)))
         wsize = min(rmse, key = rmse.get)
-        rh = rolling_Horizon(mdl = mdl, data = data,responseVar = responsVar, wsize= wsize, startInd = 0 , regress = regress, fixed = fixed , para = drparam, dr = dr)
+        rh = rhList[wsize]
         se = rh.error2
         prdList = rh.prdList
         rmse = np.sqrt(np.mean(np.cumsum(se)))
