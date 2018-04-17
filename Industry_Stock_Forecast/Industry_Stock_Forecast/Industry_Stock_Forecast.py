@@ -11,6 +11,7 @@ _data.describe()
 _colName = _data.columns.tolist()
 _dataDict = {}
 _responseVar = 'target'
+_targetCol = ['Food','Agric']
 _windowList = [80]
 _paraList = np.arange(0.0001,0.0002,0.0001)
 _trainDict = {}
@@ -41,7 +42,7 @@ for i in _colName:
 #################### LASSO ############################################################
 from sklearn.linear_model import Lasso
 mdl = Lasso(precompute = True, normalize = True)
-lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_colName,True,True,True,4,50, 'multiprocessing', "None")
+lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_targetCol,True,True,True,4,50, 'multiprocessing', "None")
 rpt.outPutReport(lasso_tune,'lasso')
 
 
@@ -49,7 +50,7 @@ rpt.outPutReport(lasso_tune,'lasso')
 from sklearn.ensemble import RandomForestRegressor
 mdl = RandomForestRegressor(n_estimators = 2, max_features = len(_colName))
 _paraList = np.arange(1,len(_colName),1)
-rf_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'C',_colName,True,True,True,4,50, 'multiprocessing', "None")
+rf_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'C',_targetCol,True,True,True,4,50, 'multiprocessing', "None")
 rpt.outPutReport(rf_tune,'randomForest')
 
 
