@@ -37,7 +37,7 @@ class RandomForest_Selection (SubsetSelection):
         super().__init__(mdl, data, response)
         self.para = grid_tune_parameter(mdl,data,response,[len(data)-1],n_feature,'n_features_').para
         self.para = int(self.para)
-        mdl = RandomForestRegressor(n_estimators = n_tree, max_features = self.para)
+        mdl = RandomForestRegressor(n_estimators = n_tree)
         mdl.fit(self.datax, self.datay)
         self.threshold = threshold
         self.coef = self.mdl.feature_importances_
