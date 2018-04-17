@@ -33,7 +33,7 @@ class RandomForest_Selection (SubsetSelection):
         from Time_Series.CrossValidation import grid_tune_parameter
         from sklearn.ensemble import RandomForestRegressor
         mdl = RandomForestRegressor(n_estimators = n_tree)
-        n_feature = np.arange(1,len(data)-1,1)
+        n_feature = np.arange(1,len(data.columns.tolist())-1,1)
         super().__init__(mdl, data, response)
         self.para = grid_tune_parameter(mdl,data,response,[len(data)-1],n_feature,'n_features_').para
         self.para = int(self.para)
