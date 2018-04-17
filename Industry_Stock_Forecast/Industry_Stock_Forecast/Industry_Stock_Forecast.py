@@ -12,7 +12,7 @@ _colName = _data.columns.tolist()
 _targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _dataDict = {}
 _responseVar = 'target'
-_windowList = [120]
+_windowList = [40,120,180,360]
 _paraList = np.arange(0.0001,0.0002,0.0001)
 _trainDict = {}
 _testDict = {}
@@ -36,7 +36,7 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
-    _trainDict[i] = _dataDict[i].iloc[0:121]
+    _trainDict[i] = _dataDict[i].iloc[0:10000]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 #################### LASSO ############################################################
