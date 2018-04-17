@@ -12,8 +12,8 @@ _colName = _data.columns.tolist()
 _targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _dataDict = {}
 _responseVar = 'target'
-_windowList = [120]
-_paraList = np.arange(0.0001,0.0002,0.0001)
+_windowList = [40,60,80,100,120]
+_paraList = np.arange(0.0001,0.001,0.0001)
 _trainDict = {}
 _testDict = {}
 
@@ -36,7 +36,7 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
-    _trainDict[i] = _dataDict[i].iloc[0:200]
+    _trainDict[i] = _dataDict[i].iloc[0:10000]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 #################### LASSO ############################################################
@@ -59,10 +59,10 @@ from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 20000)
 svm_tune = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(svm_tune,'SVM')
-svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.00001,0.00002,0.00001))
-rpt.outPutReport(svm_tune_lasso,'SVM_Lasso_test')
+svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = np.arange(0.0001,0.001,0.0001))
+rpt.outPutReport(svm_tune_lasso,'SVM_Lasso')
 
-svm_tune_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))
+svm_tune_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(svm_tune_pca,'SVM_pca_test')
 
 svm_tune_rf = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = np.arange(0.00001,0.0001,0.00001))
