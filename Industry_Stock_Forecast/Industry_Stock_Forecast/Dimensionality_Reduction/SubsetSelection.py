@@ -29,15 +29,15 @@ class Lasso_Selection (SubsetSelection):
 
 class RandomForest_Selection (SubsetSelection):
 
-    def __init__(self, data, response = 'target', n_tree = 5,  threshold = 0.5):
+    def __init__(self, data, para ,response = 'target', n_tree = 5,  threshold = 0.5):
         from Time_Series.CrossValidation import grid_tune_parameter
         from sklearn.ensemble import RandomForestRegressor
         mdl = RandomForestRegressor(n_estimators = n_tree)
-        n_feature = np.arange(1,len(data.columns.tolist())-1,1)
+        n_feature = para
         super().__init__(mdl, data, response)
         self.para = grid_tune_parameter(mdl,data,response,[len(data)-1],n_feature,'n_features_').para
         self.para = int(self.para)
-        mdl = RandomForestRegressor(n_estimators = n_tree, max_features = self.para)
+        mdl = RandomForestRegressor(n_estimators = n_tree, max_features= self.para)
         mdl.fit(self.datax, self.datay)
         self.threshold = threshold
         self.coef = self.mdl.feature_importances_

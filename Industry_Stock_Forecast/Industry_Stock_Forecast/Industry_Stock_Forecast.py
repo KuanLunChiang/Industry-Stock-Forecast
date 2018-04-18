@@ -51,9 +51,9 @@ from sklearn.ensemble import RandomForestRegressor
 mdl = RandomForestRegressor(n_estimators = 5, max_features = len(_colName))
 _paraList = np.arange(20,len(_colName),2)
 rf_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'C',_targetCol,True,True,True,6,50, 'multiprocessing', "None")
-rpt.outPutReport(rf_tune,'randomForest_test')
+rpt.outPutReport(rf_tune,'randomForest_tune')
 
-
+rf_tune.report_tuned
 ######################### SVM #########################################
 from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 20000)
@@ -63,8 +63,8 @@ svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVa
 rpt.outPutReport(svm_tune_lasso,'SVM_Lasso_test')
 svm_tune_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(svm_tune_pca,'SVM_pca_test')
-svm_tune_rf = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = np.arange(0.00001,0.0001,0.00001))
-rpt.outPutReport(svm_tune_rf,'SVM_rf_test')
+svm_tune_rf = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = [26,34,36,40,30])
+rpt.outPutReport(svm_tune_rf,'SVM_rf_tune')
 
 
 
@@ -75,3 +75,5 @@ _paraList = np.arange(1,10,1)
 knn_tune =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(knn_tune,'KNN')
 
+knn_tune_rf =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = [26,34,36,40,30])
+rpt.outPutReport(knn_tune_rf,'KNN_rf')
