@@ -5,8 +5,6 @@ import numpy as np
 import seaborn as sns
 
 
-
-
 _data = pd.read_csv(r".\Data\Data_2018.csv")
 _data = _data.drop('Unnamed: 0', axis = 1)
 _colName = _data.columns.tolist()
