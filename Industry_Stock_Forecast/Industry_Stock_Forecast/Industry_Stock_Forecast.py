@@ -23,7 +23,7 @@ def varCons (data, colName, target):
     df['target'] = data[target]
     for i in colName:
         if i == target:
-            df['lagTerm'] = data[target].shift(10)
+            df['lagTerm'] = data[target].shift(1)
         else:
             df[i] = data[i]
     df = df.dropna()
@@ -74,6 +74,18 @@ mdl = KNeighborsRegressor()
 _paraList = np.arange(1,10,1)
 knn_tune =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(knn_tune,'KNN')
-
 knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
 rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
+
+
+########################### Test Set ############################################
+knn_rf = pd.read_csv(r'./Output/Window and Parameter/KNN_rf_winPara.csv')
+from sklearn.neighbors import KNeighborsRegressor
+
+_mdlDict = {}
+for i in knn_rf['Name']:
+    wsize = int(knn_rf.loc[knn_rf['Name']==i]['Window_size'])
+    para = int(knn_rf.loc[knn_rf['Name']==i]['para'])
+    mdl = KNeighborsRegressor(n_neighbors=para)
+    _mdlDict[i] = tcv.rolling_Horizon(mdl,_testDict[i],_responseVar,wsize = wsize)
+
