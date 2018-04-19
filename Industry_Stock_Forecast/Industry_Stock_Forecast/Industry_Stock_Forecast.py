@@ -63,8 +63,8 @@ svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVa
 rpt.outPutReport(svm_tune_lasso,'SVM_Lasso')
 svm_tune_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(svm_tune_pca,'SVM_pca_test')
-svm_tune_rf = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = np.arange(0.00001,0.0001,0.00001))
-rpt.outPutReport(svm_tune_rf,'SVM_rf_test')
+svm_tune_rf_lag10 = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = [22,28,24,40,46])
+rpt.outPutReport(svm_tune_rf_lag10,'SVM_rf_lag10')
 
 
 
@@ -77,3 +77,9 @@ rpt.outPutReport(knn_tune,'KNN')
 
 knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
 rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
+
+from sklearn.neighbors import KNeighborsRegressor
+mdl = KNeighborsRegressor()
+_paraList = np.arange(1,10,1)
+knn_tune_rf_lag10 =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = [22,28,24,40,46])
+rpt.outPutReport(knn_tune_rf_lag10,'KNN_rf_lag10')
