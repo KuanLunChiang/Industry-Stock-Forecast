@@ -76,7 +76,8 @@ knn_tune =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _
 rpt.outPutReport(knn_tune,'KNN')
 knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
 rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
-
+knn_tune_rf =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = [26,34,40,30,36])
+rpt.outPutReport(knn_tune_rf,'KNN_rf')
 
 ########################### Test Set ############################################
 knn_rf = pd.read_csv(r'./Output/Window and Parameter/KNN_rf_winPara.csv')
