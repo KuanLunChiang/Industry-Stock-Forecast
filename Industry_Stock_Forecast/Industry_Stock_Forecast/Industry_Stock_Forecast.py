@@ -13,11 +13,13 @@ _targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _dataDict = {}
 _responseVar = 'target'
 _windowList = [60,120,180,360]
+_windowList = [120]
 _paraList = np.arange(0.00001,0.0001,0.00001)
+_paraList = np.arange(0.00001,0.00002,0.00001)
 _trainDict = {}
 _testDict = {}
 
-########### Variable Construction ##########################
+######### Variable Construction ##########################
 def varCons (data, colName, target):
     df = pd.DataFrame()
     df['target'] = data[target]
@@ -36,7 +38,7 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
-    _trainDict[i] = _dataDict[i].iloc[0:10000]
+    _trainDict[i] = _dataDict[i].iloc[0:121]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 #################### LASSO ############################################################
@@ -63,7 +65,14 @@ svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVa
 rpt.outPutReport(svm_tune_lasso,'SVM_Lasso')
 svm_tune_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(svm_tune_pca,'SVM_pca_test')
-svm_tune_rf_lag10 = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = [22,28,24,40,46])
+
+
+
+rfinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag10_winPara.csv')
+rfpara = {}
+for i in _targetCol:
+    rfpara[i] = int(rfinfo.loc[rfinfo.Name == i]['para'])
+svm_tune_rf_lag10 = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = rfpara)
 rpt.outPutReport(svm_tune_rf_lag10,'SVM_rf_lag10')
 
 
@@ -76,9 +85,6 @@ knn_tune =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _
 rpt.outPutReport(knn_tune,'KNN_lag5')
 knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
 rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
-<<<<<<< HEAD
-knn_tune_rf =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = [26,34,40,30,36])
-rpt.outPutReport(knn_tune_rf,'KNN_rf')
 
 ########################### Test Set ############################################
 _knn_rf = pd.read_csv(r'./Output/Window and Parameter/KNN_rf_winPara.csv')
@@ -109,11 +115,3 @@ rpt.plot_differential_report(_targetCol,_knnReport1,'oosrsquare',3,2,'Out of sam
 
 from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 20000)
-=======
-
-from sklearn.neighbors import KNeighborsRegressor
-mdl = KNeighborsRegressor()
-_paraList = np.arange(1,10,1)
-knn_tune_rf_lag10 =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = [22,28,24,40,46])
-rpt.outPutReport(knn_tune_rf_lag10,'KNN_rf_lag10')
->>>>>>> origin/Random_Forest
