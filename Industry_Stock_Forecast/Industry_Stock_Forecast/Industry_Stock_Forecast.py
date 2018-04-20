@@ -13,7 +13,7 @@ _targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _dataDict = {}
 _responseVar = 'target'
 _windowList = [60,120,180,360]
-_paraList = np.arange(0.00001,0.0001,0.00001)
+_paraList = np.arange(0.0001,0.001,0.0001)
 _trainDict = {}
 _testDict = {}
 
@@ -23,7 +23,7 @@ def varCons (data, colName, target):
     df['target'] = data[target]
     for i in colName:
         if i == target:
-            df['lagTerm'] = data[target].shift(5)
+            df['lagTerm'] = data[target].shift(1)
         else:
             df[i] = data[i]
     df = df.dropna()
@@ -43,7 +43,7 @@ for i in _colName:
 from sklearn.linear_model import Lasso
 mdl = Lasso(precompute = True, normalize = True)
 lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_targetCol,True,True,True,6,50, 'multiprocessing', "None")
-rpt.outPutReport(lasso_tune,'lasso_lag5')
+rpt.outPutReport(lasso_tune,'lasso')
 lasso_tune.report_tuned
 
 
@@ -58,7 +58,7 @@ rpt.outPutReport(rf_tune,'randomForest_lag5')
 from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 20000)
 svm_tune = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
-rpt.outPutReport(svm_tune,'SVM_lag10')
+rpt.outPutReport(svm_tune,'SVM')
 svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
 rpt.outPutReport(svm_tune_lasso,'SVM_Lasso')
 svm_tune_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))

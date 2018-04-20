@@ -237,7 +237,10 @@ class paralell_processing (object):
         prdList= {}
         coefList = {}
         colName = colName
-        report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = backend)(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy, dr, [drparam[i]]) for i in colName)
+        if dr == 'None':
+            report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = backend)(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy, dr, drparam) for i in colName)
+        else:
+            report = Parallel(n_jobs = n_jobs, verbose = verbose, backend = backend)(delayed(self.paralell_support)(i,mdl,data, responseVar,regress,windowList,paramList, paraName, fixed, greedy, dr, [drparam[i]]) for i in colName)
         for i in colName:
             errorList[i] = report[colName.index(i)]['el']
             wisize[i] =report[colName.index(i)]['tune']
