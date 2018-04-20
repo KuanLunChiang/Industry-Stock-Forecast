@@ -84,8 +84,8 @@ rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
 
 ############################ Subset Selection ######################################################
 
-rfinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag5_winPara.csv')
-lassoinfo = pd.read_csv(r'.\Output\Window and Parameter\lasso_lag5_winPara.csv')
+rfinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag10_winPara.csv')
+lassoinfo = pd.read_csv(r'.\Output\Window and Parameter\lasso_lag10_winPara.csv')
 _lassopara = {}
 _rfpara = {}
 for i in _targetCol:
@@ -101,8 +101,8 @@ rpt.outPutReport(knn_tune_rf,'KNN_rf_lag5')
 
 svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = _lassopara)
 svm_tune_rf = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = _rfpara)
-rpt.outPutReport(svm_tune_lasso,'SVM_Lasso_lag5')
-rpt.outPutReport(svm_tune_rf,'SVM_rf_lag5')
+rpt.outPutReport(svm_tune_lasso,'SVM_Lasso_lag10')
+rpt.outPutReport(svm_tune_rf,'SVM_rf_lag10')
 
 
 ########################### Test Set ############################################
