@@ -13,9 +13,7 @@ _targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _dataDict = {}
 _responseVar = 'target'
 _windowList = [60,120,180,360]
-_windowList = [120]
 _paraList = np.arange(0.00001,0.0001,0.00001)
-_paraList = np.arange(0.00001,0.00002,0.00001)
 _trainDict = {}
 _testDict = {}
 
@@ -38,7 +36,7 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
-    _trainDict[i] = _dataDict[i].iloc[0:121]
+    _trainDict[i] = _dataDict[i].iloc[0:10000]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 #################### LASSO ############################################################
@@ -86,8 +84,8 @@ rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
 
 ############################ Subset Selection ######################################################
 
-rfinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag10_winPara.csv')
-lassoinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag10_winPara.csv')
+rfinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag5_winPara.csv')
+lassoinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag5_winPara.csv')
 _lassopara = {}
 _rfpara = {}
 for i in _targetCol:
@@ -95,10 +93,10 @@ for i in _targetCol:
     _lassopara = lassoinfo.loc[lassoinfo.Name == i]['para']
 
 
-knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = _lassoparapara)
-knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = _rfpara)
-rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
-rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
+knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = _lassopara)
+knn_tune_rf =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = _rfpara)
+rpt.outPutReport(knn_tune_lasso,'KNN_lasso_lag5')
+rpt.outPutReport(knn_tune_rf,'KNN_rf_lag5')
 
 
 svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = _lassoparapara)
