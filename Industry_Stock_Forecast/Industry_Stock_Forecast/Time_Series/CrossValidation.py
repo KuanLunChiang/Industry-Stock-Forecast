@@ -318,8 +318,8 @@ class benchMark (object):
         lr = LinearRegression()
         self.error2 = {}
         self.prd = {}
-        for i in data:
-            wsize = int(tuneReport.loc[tuneReport.Name == i].Window_size)
+        for i in tuneReport['Name']:
+            wsize = int(tuneReport.loc[tuneReport.Name == i]['Window_size'])
             rh = rolling_Horizon(lr,data[i],responseVar,wsize)
             self.error2[i] = rh.error2
             self.prd[i] = rh.prdList

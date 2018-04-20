@@ -94,12 +94,10 @@
     <Content Include="Output\Window and Parameter\lasso_lag30_winPara.csv" />
     <Content Include="Output\Window and Parameter\lasso_winPara.csv" />
     <Content Include="Output\Window and Parameter\randomForest_lag10_winPara.csv" />
-    <Content Include="Output\Window and Parameter\randomForest_test_winPara.csv" />
     <Content Include="Output\Window and Parameter\randomForest_tune_winPara.csv" />
     <Content Include="Output\Window and Parameter\randomForest_winPara.csv" />
     <Content Include="Output\Window and Parameter\svm_full_winPara.csv" />
     <Content Include="Output\Window and Parameter\svm_lasso_winPara.csv" />
-    <Content Include="Output\Window and Parameter\SVM_rf_tune_winPara.csv" />
     <Content Include="Output\Window and Parameter\SVM_winPara.csv" />
     <Content Include="Time_Series\__pycache__\class1.cpython-36.pyc" />
     <Content Include="Time_Series\__pycache__\class2.cpython-36.pyc" />

@@ -9,11 +9,11 @@ class cum_sse_report (object):
     This class will generate a report include cumulative differential SSE and cumulative out-of-sample R-squareed
     """
     def __init__(self, mdlError, benchError):
-        resDf = pd.DataFrame({'RegError': mdlError, 'MeanError': benchError})
-        resDf['cum_reg_error'] = resDf.RegError.cumsum()
-        resDf['cum_mean_error'] = resDf.MeanError.cumsum()
-        resDf['SSEDif'] =  resDf.cum_mean_error - resDf.cum_reg_error
-        resDf['oosrsquare'] = 1- (resDf.cum_reg_error / resDf.cum_mean_error)
+        resDf = pd.DataFrame({'MdlError': mdlError, 'BenchError': benchError})
+        resDf['cum_mdl_error'] = resDf.MdlError.cumsum()
+        resDf['cum_bench_error'] = resDf.BenchError.cumsum()
+        resDf['SSEDif'] =  resDf.cum_mdl_error - resDf.cum_bench_error
+        resDf['oosrsquare'] = 1- (resDf.cum_mdl_error / resDf.cum_bench_error)
         self.reportDF = resDf
 
 
