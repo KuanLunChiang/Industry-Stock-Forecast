@@ -46,6 +46,8 @@ class rolling_Horizon(object):
     def __init__(self, mdl, data, responseVar ,wsize=4 , startInd=0, regress = True, fixed = True, para = np.arange(0.0001,0.001,0.0001), dr = 'None'):
         from Time_Series.CrossValidation import Feature_Selection_Tune
         from sklearn.linear_model import Lasso
+        from sklearn.svm import SVR
+        from sklearn.neighbors import KNeighborsRegressor
         from sklearn.ensemble import RandomForestRegressor
         self.error2 = []
         self.prdList = []
@@ -56,6 +58,12 @@ class rolling_Horizon(object):
         for i in range(startInd,len(data)):
             rlg = mdl
             testx, testy, trainx, trainy = self.data_prep(data, dr, fixed, i, mdl, para, responseVar, startInd, wsize)
+            if isinstance(mdl,SVR) or isinstance(mdl,KNeighborsRegressor):
+                trainx = trainx.apply(lambda x: (x - np.mean(x)) / np.std(x))
+                txmean = trainx.mean()
+                txstd = trainx.std()
+                for j in testx:
+                    testx[j] = testx[j].apply(lambda x: (x-txmean)/txstd)
             rlg.fit(trainx,trainy)
             prd = rlg.predict(testx)
             if dr != 'None':
