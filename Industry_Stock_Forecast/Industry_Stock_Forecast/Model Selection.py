@@ -18,12 +18,12 @@ _trainDict = {}
 _testDict = {}
 
 ######### Variable Construction ##########################
-def varCons (data, colName, target):
+def varCons (data, colName, target, lagnum = 1):
     df = pd.DataFrame()
     df['target'] = data[target]
     for i in colName:
         if i == target:
-            df['lagTerm'] = data[target].shift(1)
+            df['lagTerm'] = data[target].shift(lagnum)
         else:
             df[i] = data[i]
     df = df.dropna()
@@ -56,20 +56,15 @@ rpt.outPutReport(rf_tune,'randomForest_lag5')
 
 ######################### SVM #########################################
 from sklearn.svm import SVR
-mdl = SVR(kernel = 'rbf', cache_size = 20000)
+mdl = SVR(kernel = 'rbf', cache_size = 10000)
 svm_tune = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(svm_tune,'SVM')
 svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
 rpt.outPutReport(svm_tune_lasso,'SVM_Lasso')
 svm_tune_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))
 rpt.outPutReport(svm_tune_pca,'SVM_pca_test')
-
-
-
-
 svm_tune_rf_lag10 = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = _rfpara)
 rpt.outPutReport(svm_tune_rf_lag10,'SVM_rf_lag10')
-
 
 
 ######################### KNN ############################################
@@ -85,12 +80,12 @@ rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
 ############################ Subset Selection ######################################################
 
 rfinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag5_winPara.csv')
-lassoinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag5_winPara.csv')
+lassoinfo = pd.read_csv(r'.\Output\Window and Parameter\lasso_lag5_winPara.csv')
 _lassopara = {}
 _rfpara = {}
 for i in _targetCol:
     _rfpara[i] = int(rfinfo.loc[rfinfo.Name == i]['para'])
-    _lassopara = lassoinfo.loc[lassoinfo.Name == i]['para']
+    _lassopara = float(lassoinfo.loc[lassoinfo.Name == i]['para'])
 
 
 knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = _lassopara)
@@ -98,38 +93,8 @@ knn_tune_rf =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar 
 rpt.outPutReport(knn_tune_lasso,'KNN_lasso_lag5')
 rpt.outPutReport(knn_tune_rf,'KNN_rf_lag5')
 
-
 svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = _lassoparapara)
-svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = _rfpara)
-rpt.outPutReport(svm_tune_lasso,'SVM_Lasso')
+svm_tune_rf = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'rf', drparam = _rfpara)
+rpt.outPutReport(svm_tune_rf,'SVM_rf')
 
 
-########################### Test Set ############################################
-_knn_rf = pd.read_csv(r'./Output/Window and Parameter/KNN_rf_winPara.csv')
-_knn_lasso = pd.read_csv(r'./Output/Window and Parameter/KNN_lasso_winPara.csv')
-from sklearn.neighbors import KNeighborsRegressor
-   
-def report_cons_support(_mdlDict, _reportDict, bm, dpara, dr, i, mdl, paraName, report_tune):
-    wsize = int(_reportDict.loc[report_tune['Name']==i]['Window_size'])
-    para = int(_reportDict.loc[report_tune['Name']==i]['para'])
-    setattr(mdl,paraName,para)
-    _mdlDict[i] = tcv.rolling_Horizon(mdl,_testDict[i],_responseVar,wsize,0,True,True,dpara,dr)
-    _reportDict[i]= rpt.cum_sse_report(_mdlDict[i].error2,bm.error2[i]).reportDF
-
-def report_cons (mdl,paraName,data,report_tune,targetCol,responseVar, dpara = 0,dr = 'None'):
-    _mdlDict = {}
-    _reportDict = {}
-    bm = tcv.benchMark()
-    bm.Linear_Regression(data,report_tune,responseVar)
-    for i in targetCol:
-        report_cons_support(_mdlDict, report_tune, bm, dpara, dr, i, mdl, paraName, report_tune)
-    return _mdlDict, _reportDict
-
-knn = KNeighborsRegressor()
-_knnDict1, _knnReport1 = report_cons(knn,'n_neighbors',_testDict,_knn_rf,_targetCol,_responseVar,[34,36,40,26,30],'rf')
-rpt.plot_differential_report(_targetCol,_knnReport1,'SSEDif',3,2,'SSE Differential')
-rpt.plot_differential_report(_targetCol,_knnReport1,'oosrsquare',3,2,'Out of sample R squared')
-
-
-from sklearn.svm import SVR
-mdl = SVR(kernel = 'rbf', cache_size = 20000)

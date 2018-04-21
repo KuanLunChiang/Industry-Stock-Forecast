@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>23f7ab8b-247e-4c5e-bcb8-f28000e9e20d</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Industry_Stock_Forecast.py</StartupFile>
+    <StartupFile>Model Selection.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -31,7 +31,10 @@
     <Compile Include="Dimensionality_Reduction\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Industry_Stock_Forecast.py" />
+    <Compile Include="Model Selection.py" />
+    <Compile Include="Performance.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Test Script\Dimensionality_Test.py">
       <SubType>Code</SubType>
     </Compile>
