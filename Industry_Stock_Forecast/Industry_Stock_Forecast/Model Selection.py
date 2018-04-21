@@ -12,8 +12,8 @@ _colName = _data.columns.tolist()
 _targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _dataDict = {}
 _responseVar = 'target'
-_windowList = [60,120,180,360]
-_paraList = np.arange(0.0001,0.001,0.0001)
+_windowList = [360]
+_paraList = [2,2.5,2.1,2.2,2.3,2.6,0.0001]
 _trainDict = {}
 _testDict = {}
 
@@ -39,6 +39,7 @@ for i in _colName:
     _trainDict[i] = _dataDict[i].iloc[0:10000]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
+
 #################### LASSO ############################################################
 from sklearn.linear_model import Lasso
 mdl = Lasso(precompute = True, normalize = True)
@@ -58,7 +59,9 @@ rpt.outPutReport(rf_tune,'randomForest_lag5')
 from sklearn.svm import SVR
 mdl = SVR(kernel = 'rbf', cache_size = 10000)
 svm_tune = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
-rpt.outPutReport(svm_tune,'SVM')
+svm_tune.report_tuned
+
+rpt.outPutReport(svm_tune,'svm_lag1_new')
 svm_tune_lasso = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
 rpt.outPutReport(svm_tune_lasso,'SVM_Lasso')
 svm_tune_pca = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = -1, verbose = 50, backend = 'multiprocessing', dr = 'PCA', drparam = np.arange(0.00001,0.0001,0.00001))
