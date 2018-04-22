@@ -13,7 +13,7 @@ _targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _dataDict = {}
 _responseVar = 'target'
 _windowList = [360]
-_paraList = [2,2.5,2.1,2.2,2.3,2.6,0.0001]
+_paraList = [2,2.5,2.1,2.7,2.6,2.8,0.0001]
 _trainDict = {}
 _testDict = {}
 
@@ -57,8 +57,8 @@ rpt.outPutReport(rf_tune,'randomForest_lag5')
 
 ######################### SVM #########################################
 from sklearn.svm import SVR
-mdl = SVR(kernel = 'rbf', cache_size = 10000)
-svm_tune = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
+mdl = SVR(kernel = 'rbf', cache_size = 20000)
+svm_tune = tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'C', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
 svm_tune.report_tuned
 
 rpt.outPutReport(svm_tune,'svm_lag1_new')
@@ -73,9 +73,10 @@ rpt.outPutReport(svm_tune_rf_lag10,'SVM_rf_lag10')
 ######################### KNN ############################################
 from sklearn.neighbors import KNeighborsRegressor
 mdl = KNeighborsRegressor()
-_paraList = np.arange(1,10,1)
+_paraList = np.arange(2,20,2)
 knn_tune =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
-rpt.outPutReport(knn_tune,'KNN_lag5')
+knn_tune.report_tuned
+rpt.outPutReport(knn_tune,'knn_lag1_new')
 knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
 rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
 
