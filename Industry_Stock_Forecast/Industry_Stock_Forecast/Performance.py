@@ -70,7 +70,6 @@ svm = SVR(cache_size= 10000)
 rf = RandomForestRegressor(n_estimators=5)
 lasso = Lasso(precompute=True)
 tuneOrder = ['lasso','rf','knn','svm']
-cvList = [_lasso,_rf, _knn, _svm]
 _mdlList = [lasso, rf, knn, svm]
 _paraNameList = ['alpha','max_features','n_neighbors','C']
 _rptDict = {}
@@ -98,8 +97,6 @@ for l in [1]:
     for i in _colName:
         _trainDict[i] = _dataDict[i].iloc[0:10000]
         _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
-    for i in _testDict:
-        _testDict[i].loc[:,_testDict[i].columns != 'target'] = _testDict[i].drop('target',axis = 1).apply(lambda x: (x - np.mean(x)) / np.std(x))
 
     for i in range(len(_mdlList)):
         start = timer()
@@ -117,13 +114,6 @@ for l in [1]:
 
 
 #################################### Feature Selection ###########################################################
-_knn_rf = pd.read_csv(r'./Output/Window and Parameter/knn_rf_lag'+str(1)+'_winPara.csv')
-_knn_lasso = pd.read_csv(r'./Output/Window and Parameter/knn_lasso_lag'+str(1)+'_winPara.csv')
-_svm_lasso = pd.read_csv(r'./Output/Window and Parameter/svm_lasso_lag'+str(1)+'_winPara.csv')
-_svm_rf = pd.read_csv(r'./Output/Window and Parameter/svm_rf_lag'+str(1)+'_winPara.csv')
-rfinfo = pd.read_csv(r'./Output/Window and Parameter/randomForest_lag'+str(1)+'_winPara.csv')
-lassoinfo = pd.read_csv(r'./Output/Window and Parameter/lasso_lag'+str(1)+'_winPara.csv')
-
 _fsrptDict = {}
 _fsmdlDict = {}
 _fsTune = ['knn_lasso','knn_rf','svm_lasso','svm_rf']
@@ -132,8 +122,6 @@ _lassopara = {}
 _rfpara = {}
 _mdlList = [knn,knn,svm,svm]
 _paraNameList = ['n_neighbors','n_neighbors','C','C'] 
-_cvList = [_knn_lasso,_knn_rf,_svm_lasso,_svm_rf]
-
 
 
 for l in [1,5,10]:
@@ -144,6 +132,7 @@ for l in [1,5,10]:
     _svm_rf = pd.read_csv(r'./Output/Window and Parameter/svm_rf_lag'+str(l)+'_winPara.csv')
     rfinfo = pd.read_csv(r'./Output/Window and Parameter/randomForest_lag'+str(l)+'_winPara.csv')
     lassoinfo = pd.read_csv(r'./Output/Window and Parameter/lasso_lag'+str(l)+'_winPara.csv')
+    _cvList = [_knn_lasso,_knn_rf,_svm_lasso,_svm_rf]
     for i in _colName:
         _dataDict[i] = varCons(_data,_colName,i,l)
     assert len(_dataDict) == len(_colName)
@@ -169,6 +158,8 @@ for l in [1,5,10]:
         end = timer()
         print(end - start)
         print(_fsTune[i])
+    for i in _fsrptDict:
+        rpt.plot_differential_report(_targetCol,_fsrptDict[i],'SSEDif',2,3,'SSE Diffferential '+i)
     ttlend = timer()
     print(ttlend - ttlStart)
 
