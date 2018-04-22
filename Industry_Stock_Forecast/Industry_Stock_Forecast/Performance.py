@@ -67,29 +67,24 @@ def report_cons (mdl,paraName,data,report_tune,targetCol,responseVar, dpara = 0,
 ########################## No Feature Selection ####################################################################
 knn = KNeighborsRegressor()
 svm = SVR(cache_size= 10000)
-rf = RandomForestRegressor(n_estimators=5)
+rf = RandomForestRegressor(n_estimators=20)
 lasso = Lasso(precompute=True)
-tuneOrder = ['lasso','rf','knn','svm']
-_mdlList = [lasso, rf, knn, svm]
-_paraNameList = ['alpha','max_features','n_neighbors','C']
-_rptDict = {}
-_mdlDict = {}
-
-_tuneOrder = ['svm']
-_mdlList = [svm]
-_paraNameList = ['C']
+tuneOrder = ['knn','lasso','rf','svm']
+_mdlList = [knn,lasso, rf, svm]
+_paraNameList = ['n_neighbors','alpha','max_features','C']
 _rptDict = {}
 _mdlDict = {}
 
 
 
-for l in [1]:
+
+for l in [1,5,10]:
     ttlStart = timer()
     _lasso = pd.read_csv(r'./Output/Window and Parameter/lasso_lag'+str(l)+'_winPara.csv')
     _rf = pd.read_csv(r'./Output/Window and Parameter/randomForest_lag'+str(l)+'_winPara.csv')
     _knn = pd.read_csv(r'./Output/Window and Parameter/knn_lag'+str(l)+'_winPara.csv')
     _svm = pd.read_csv(r'./Output/Window and Parameter/svm_lag'+str(l)+'_winPara.csv')
-    _cvList = [_svm]
+    _cvList = [_knn,_lasso,_rf,_svm]
     for i in _colName:
         _dataDict[i] = varCons(_data,_colName,i,l)
     assert len(_dataDict) == len(_colName)
@@ -101,11 +96,11 @@ for l in [1]:
     for i in range(len(_mdlList)):
         start = timer()
         mdlDict, reportDict = report_cons(mdl = _mdlList[i], paraName=_paraNameList[i],data=_testDict,report_tune=_cvList[i],targetCol=_targetCol,responseVar=_responseVar)
-        _rptDict[_tuneOrder[i] + '_lag'+str(l)] = reportDict
-        _mdlDict[_tuneOrder[i]+ '_lag'+str(l)] = mdlDict
+        _rptDict[tuneOrder[i] + '_lag'+str(l)] = reportDict
+        _mdlDict[tuneOrder[i]+ '_lag'+str(l)] = mdlDict
         end = timer()
         print(end - start)
-        print(_tuneOrder[i])
+        print(tuneOrder[i])
     ttlend = timer()
     print(ttlend - ttlStart)
 
@@ -122,6 +117,8 @@ _lassopara = {}
 _rfpara = {}
 _mdlList = [knn,knn,svm,svm]
 _paraNameList = ['n_neighbors','n_neighbors','C','C'] 
+
+
 
 
 for l in [1,5,10]:
@@ -171,15 +168,20 @@ _fsrptDict
 _mdlDict
 _rptDict
 
-rmseMx = pd.DataFrame(columns=['Mdl','RMSE'])
+_fsmdlDict['svm_rf_lag1']['Gold'].wsize
+
+rmseMx = pd.DataFrame(columns=['Mdl','Ind','Window Size','RMSE'])
+SSEMx = pd.DataFrame(columns = ['Mdl','Ind','Wsize','SSE'])
 for i in _fsmdlDict:
-    rmseMx = rmseMx.append({'Mdl':i,'RMSE':_fsmdlDict[i].error2},ignore_index= True)
+    for j in _targetCol:
+        rmseMx = rmseMx.append({'Mdl':i,'Ind':j,'Window Size':_fsmdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_fsmdlDict[i][j].error2))},ignore_index= True)
 
-
+        
+rmseMx.pivot(index = 'Ind',columns = 'Mdl',values = 'RMSE')
+rmseMx.to_csv('.\Output\RMSE Matrix.csv')
 
 for i in _fsrptDict:
     rpt.plot_differential_report(_targetCol,_fsrptDict[i],'SSEDif',2,3,'SSE Diffferential '+i)
-
 
 for i in _rptDict:
     rpt.plot_differential_report(_targetCol,_rptDict[i],'SSEDif',2,3,'SSE Diffferential '+i)
