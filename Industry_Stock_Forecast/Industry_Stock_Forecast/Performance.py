@@ -2,7 +2,7 @@ from Time_Series import CrossValidation as tcv
 from Time_Series import Report as rpt
 import pandas as pd
 import numpy as np
-
+import json
 _data = pd.read_csv(r".\Data\Data_2018.csv")
 _data = _data.drop('Unnamed: 0', axis = 1)
 _data.describe()
@@ -67,15 +67,13 @@ def report_cons (mdl,paraName,data,report_tune,targetCol,responseVar, dpara = 0,
 ########################## No Feature Selection ####################################################################
 knn = KNeighborsRegressor()
 svm = SVR(cache_size= 10000)
-rf = RandomForestRegressor(n_estimators=20)
+rf = RandomForestRegressor(n_estimators=10)
 lasso = Lasso(precompute=True)
 tuneOrder = ['knn','lasso','rf','svm']
 _mdlList = [knn,lasso, rf, svm]
 _paraNameList = ['n_neighbors','alpha','max_features','C']
 _rptDict = {}
 _mdlDict = {}
-
-
 
 
 for l in [1,5,10]:
@@ -85,6 +83,7 @@ for l in [1,5,10]:
     _knn = pd.read_csv(r'./Output/Window and Parameter/knn_lag'+str(l)+'_winPara.csv')
     _svm = pd.read_csv(r'./Output/Window and Parameter/svm_lag'+str(l)+'_winPara.csv')
     _cvList = [_knn,_lasso,_rf,_svm]
+
     for i in _colName:
         _dataDict[i] = varCons(_data,_colName,i,l)
     assert len(_dataDict) == len(_colName)
@@ -117,9 +116,6 @@ _lassopara = {}
 _rfpara = {}
 _mdlList = [knn,knn,svm,svm]
 _paraNameList = ['n_neighbors','n_neighbors','C','C'] 
-
-
-
 
 for l in [1,5,10]:
     ttlStart = timer()
@@ -165,10 +161,10 @@ for l in [1,5,10]:
 ########################### Plots and Stats #############################################################
 _fsmdlDict
 _fsrptDict
-_mdlDict
-_rptDict
+cpymdl = _mdlDict.copy()
+cpyrpt = _rptDict.copy()
 
-_fsmdlDict['svm_rf_lag1']['Gold'].wsize
+
 
 rmseMx = pd.DataFrame(columns=['Mdl','Ind','Window Size','RMSE'])
 SSEMx = pd.DataFrame(columns = ['Mdl','Ind','Wsize','SSE'])
@@ -176,12 +172,38 @@ for i in _fsmdlDict:
     for j in _targetCol:
         rmseMx = rmseMx.append({'Mdl':i,'Ind':j,'Window Size':_fsmdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_fsmdlDict[i][j].error2))},ignore_index= True)
 
+for i in _mdlDict:
+    for j in _targetCol:
+        rmseMx = rmseMx.append({'Mdl':i,'Ind':j,'Window Size':_mdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_mdlDict[i][j].error2))},ignore_index= True)
         
-rmseMx.pivot(index = 'Ind',columns = 'Mdl',values = 'RMSE')
+
+rmseMx.pivot(index = 'Ind',columns = 'Mdl',values = 'RMSE').to_csv('.\Output\RMSE Matrix_pt.csv')
 rmseMx.to_csv('.\Output\RMSE Matrix.csv')
+
+
 
 for i in _fsrptDict:
     rpt.plot_differential_report(_targetCol,_fsrptDict[i],'SSEDif',2,3,'SSE Diffferential '+i)
 
 for i in _rptDict:
     rpt.plot_differential_report(_targetCol,_rptDict[i],'SSEDif',2,3,'SSE Diffferential '+i)
+
+
+
+def outputReport(mdl ,name):
+    coefDF = mdl.coefSelection
+    errorDF = mdl.error2
+    json_output(coefDF,'.\\Output\\Coefficient\\'+name+'_coefficient'+'.json')
+    json_output(errorDF,'.\\Output\\Error List\\'+name+'_errorList'+'.json')
+
+
+def json_output (data, output):
+    import json
+    with open(output, 'w') as outfile:
+        json.dump(data,outfile)
+
+for i in _mdlDict:
+    for j in _targetCol:
+        outputReport(_mdlDict[i][j],'test_'+i+ '_'+j)
+
+

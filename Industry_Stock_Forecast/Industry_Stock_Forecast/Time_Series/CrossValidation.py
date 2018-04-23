@@ -16,7 +16,7 @@ class Feature_Selection_Tune (object):
             else:
                 self.data = data
         elif dr == 'rf':
-            sf = RandomForest_Selection(data,para = para,response = responseVar,n_tree=5,threshold = 0.5)
+            sf = RandomForest_Selection(data,para = para,response = responseVar,n_tree=5,threshold = 0.05)
             self.selectFeatures = [responseVar] + sf.selectFeatures.tolist()
             self.data = data[self.selectFeatures]
             if len(self.selectFeatures) > 1:
@@ -78,7 +78,7 @@ class rolling_Horizon(object):
                 elif isinstance(mdl,RandomForestRegressor):
                     coef = rlg.feature_importances_
                     coefM = pd.DataFrame({'name': colName,'coef': coef})
-                    selectCoef = coefM.loc[np.abs(coefM.coef) > 0.5]
+                    selectCoef = coefM.loc[np.abs(coefM.coef) > 0.05]
                     selectFeatures = selectCoef.name
                     self.coefSelection[i] = selectFeatures.tolist()
             if regress:
