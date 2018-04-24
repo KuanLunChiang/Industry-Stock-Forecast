@@ -13,7 +13,7 @@ _targetCol = ['Mach','Whlsl','BusSv','Gold','Smoke','Soda']
 _dataDict = {}
 _responseVar = 'target'
 _windowList = [360]
-_paraList = [2,2.5,2.1,2.7,2.6,2.8,0.0001]
+_paraList = [0.8,1,0.7]
 _trainDict = {}
 _testDict = {}
 
@@ -36,14 +36,19 @@ assert len(_dataDict) == len(_colName)
 
 ################ Train and Test Split ############################################
 for i in _colName:
-    _trainDict[i] = _dataDict[i].iloc[0:10000]
+    _trainDict[i] = _dataDict[i].iloc[0:366]
     _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
 
 #################### LASSO ############################################################
 from sklearn.linear_model import Lasso
-mdl = Lasso(precompute = True, normalize = True)
+mdl = Lasso(precompute = True)
 lasso_tune = tcv.paralell_processing(mdl,_trainDict,_responseVar,_windowList,_paraList,'alpha',_targetCol,True,True,True,6,50, 'multiprocessing', "None")
+
+for j in _targetCol:
+    for i in lasso_tune.coefList[j]:
+        print(len(lasso_tune.coefList[j][i]))
+
 rpt.outPutReport(lasso_tune,'lasso')
 lasso_tune.report_tuned
 
@@ -74,17 +79,21 @@ rpt.outPutReport(svm_tune_rf_lag10,'SVM_rf_lag10')
 from sklearn.neighbors import KNeighborsRegressor
 mdl = KNeighborsRegressor()
 _paraList = np.arange(2,20,2)
-knn_tune =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'None', drparam = np.arange(0.00001,0.0001,0.00001))
-knn_tune.report_tuned
+knn_tune =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 4, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.7])
+knn_tune.coefList
+for j in _targetCol:
+    for i in lasso_tune.coefList[j]:
+        print(len(knn_tune.coefList[j][i]))
+
 rpt.outPutReport(knn_tune,'knn_lag1_new')
-knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.0001])
+knn_tune_lasso =  tcv.paralell_processing(mdl = mdl, data = _trainDict,responseVar = _responseVar, windowList = _windowList, paramList = _paraList, paraName = 'n_neighbors', colName = _targetCol, regress = True, fixed = True, greedy = True, n_jobs = 6, verbose = 50, backend = 'multiprocessing', dr = 'Lasso', drparam = [0.7,1])
 rpt.outPutReport(knn_tune_lasso,'KNN_lasso')
 
 
 ############################ Subset Selection ######################################################
 
-rfinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag5_winPara.csv')
-lassoinfo = pd.read_csv(r'.\Output\Window and Parameter\lasso_lag5_winPara.csv')
+rfinfo = pd.read_csv(r'.\Output\Window and Parameter\randomForest_lag1_winPara.csv')
+lassoinfo = pd.read_csv(r'.\Output\Window and Parameter\lasso_lag1_winPara.csv')
 _lassopara = {}
 _rfpara = {}
 for i in _targetCol:

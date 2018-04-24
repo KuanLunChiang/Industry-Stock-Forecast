@@ -3,6 +3,7 @@ from Time_Series import Report as rpt
 import pandas as pd
 import numpy as np
 import json
+from matplotlib import pyplot as plt
 _data = pd.read_csv(r".\Data\Data_2018.csv")
 _data = _data.drop('Unnamed: 0', axis = 1)
 _data.describe()
@@ -57,10 +58,23 @@ def report_cons (mdl,paraName,data,report_tune,targetCol,responseVar, dpara = 0,
             dpr = [dpara[i]]
         else: 
             dpr = 0
-        tempMdl, tempReport = report_cons_support(_mdlDict, report_tune, bm, dpr, dr, i, mdl, paraName, report_tune)
+        tempMdl, tempReport = report_cons_support(mdlDict, report_tune, bm, dpr, dr, i, mdl, paraName, report_tune)
         mdlDict[i] = tempMdl
         reportDict[i] = tempReport
     return mdlDict, reportDict
+
+
+def outputReport(mdl ,name):
+    coefDF = mdl.coefSelection
+    errorDF = mdl.error2
+    json_output(coefDF,'.\\Output\\Coefficient\\'+name+'_coefficient'+'.json')
+    json_output(errorDF,'.\\Output\\Error List\\'+name+'_errorList'+'.json')
+
+
+def json_output (data, output):
+    import json
+    with open(output, 'w') as outfile:
+        json.dump(data,outfile)
 
 
 
@@ -86,9 +100,6 @@ for l in [1,5,10]:
 
     for i in _colName:
         _dataDict[i] = varCons(_data,_colName,i,l)
-    assert len(_dataDict) == len(_colName)
-
-    for i in _colName:
         _trainDict[i] = _dataDict[i].iloc[0:10000]
         _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
@@ -102,7 +113,6 @@ for l in [1,5,10]:
         print(tuneOrder[i])
     ttlend = timer()
     print(ttlend - ttlStart)
-
 
 
 
@@ -134,7 +144,6 @@ for l in [1,5,10]:
         _trainDict[i] = _dataDict[i].iloc[0:10000]
         _testDict[i] = _dataDict[i].drop(_trainDict[i].index)
 
-
     for i in _targetCol:
         _rfpara[i] = int(rfinfo.loc[rfinfo.Name == i]['para'])
         _lassopara[i] = float(lassoinfo.loc[lassoinfo.Name == i]['para'])
@@ -163,24 +172,27 @@ _fsmdlDict
 _fsrptDict
 cpymdl = _mdlDict.copy()
 cpyrpt = _rptDict.copy()
+cpfsmdl = _fsmdlDict.copy()
+cpfsrpt = _fsrptDict.copy()
 
-
+_fsrptDict['svm_rf_lag1']['Soda']
+_rptDict['svm_lag1']['Soda']
 
 rmseMx = pd.DataFrame(columns=['Mdl','Ind','Window Size','RMSE'])
-SSEMx = pd.DataFrame(columns = ['Mdl','Ind','Wsize','SSE'])
+bchrmseMx = pd.DataFrame(columns=['Mdl','Ind','Window Size','RMSE'])
 for i in _fsmdlDict:
     for j in _targetCol:
-        rmseMx = rmseMx.append({'Mdl':i,'Ind':j,'Window Size':_fsmdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_fsmdlDict[i][j].error2))},ignore_index= True)
-
+        rmseMx = rmseMx.append({'Mdl':i,'Ind':j,'Window Size':_fsmdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_fsrptDict[i][j].MdlError))},ignore_index= True)
+        bchrmseMx = bchrmseMx.append({'Mdl':i,'Ind':j,'Window Size':_fsmdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_fsrptDict[i][j].BenchError))},ignore_index= True)
 for i in _mdlDict:
     for j in _targetCol:
-        rmseMx = rmseMx.append({'Mdl':i,'Ind':j,'Window Size':_mdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_mdlDict[i][j].error2))},ignore_index= True)
+        rmseMx = rmseMx.append({'Mdl':i,'Ind':j,'Window Size':_mdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_rptDict[i][j].MdlError))},ignore_index= True)
+        bchrmseMx = bchrmseMx.append({'Mdl':i,'Ind':j,'Window Size':_mdlDict[i][j].wsize,'RMSE':np.sqrt(np.mean(_rptDict[i][j].BenchError))},ignore_index= True)
         
 
 rmseMx.pivot(index = 'Ind',columns = 'Mdl',values = 'RMSE').to_csv('.\Output\RMSE Matrix_pt.csv')
 rmseMx.to_csv('.\Output\RMSE Matrix.csv')
-
-
+bchrmseMx.pivot(index = 'Ind',columns = 'Mdl',values = 'RMSE').to_csv('.\Output\Bench RMSE Matrix.csv')
 
 for i in _fsrptDict:
     rpt.plot_differential_report(_targetCol,_fsrptDict[i],'SSEDif',2,3,'SSE Diffferential '+i)
@@ -189,21 +201,89 @@ for i in _rptDict:
     rpt.plot_differential_report(_targetCol,_rptDict[i],'SSEDif',2,3,'SSE Diffferential '+i)
 
 
+_plotDict = {}
+_lagDict = {}
+findList = ['lasso','rf','svm','knn']
+findListFS = ['svm_lasso','svm_rf','knn_lasso','knn_rf']
+lagList = ['_lag1','_lag5','_lag10']
+for k in lagList:
+    for j in _targetCol:
+        plotFrame = pd.DataFrame()
+        for i in findList:
+            find = i + k
+            plotFrame[i] = _rptDict[find][j].oosrsquare
+        for ind in findListFS:
+            find = ind + k
+            plotFrame[ind] = _fsrptDict[find][j].oosrsquare
+        _plotDict[j] = plotFrame.copy()
+    _lagDict[k] = _plotDict.copy()
 
-def outputReport(mdl ,name):
-    coefDF = mdl.coefSelection
-    errorDF = mdl.error2
-    json_output(coefDF,'.\\Output\\Coefficient\\'+name+'_coefficient'+'.json')
-    json_output(errorDF,'.\\Output\\Error List\\'+name+'_errorList'+'.json')
 
 
-def json_output (data, output):
-    import json
-    with open(output, 'w') as outfile:
-        json.dump(data,outfile)
+for j in _targetCol:
+    #plt.axhline(y=0, color='black', linestyle='-')
+    _lagDict['_lag10'][j].plot(figsize = (10,10))
+    plt.title(j)
+    
+############################ Feature Map ######################################################
+#for i in cpfsmdl:
+#    if i not in ['knn_lasso_lag1','knn_lasso_lag5','knn_lasso_lag10']:
+#        _fsmdlDict[i] = cpfsmdl[i].copy()
+
+
+import seaborn as sns
+fdmdlList = ['knn_lasso_lag1','knn_lasso_lag5','knn_lasso_lag10','knn_rf_lag1', 'knn_rf_lag5', 'knn_rf_lag10']
+fdmdlList = ['lasso_lag1']
+
+
+for fdmd in fdmdlList:
+    print(fdmd)
+    for itd in _targetCol:
+        coefPD = pd.DataFrame(columns = _colName+['lagTerm'])
+        fdmdl = _mdlDict[fdmd][itd].coefSelection
+        for i in range(len(fdmdl)):
+            tempDict = {}
+            for j in fdmdl[i]:
+                tempDict[j] = 1
+            coefPD = coefPD.append(tempDict,ignore_index= True)
+        sns.set_style('ticks')
+        fig, ax = plt.subplots()
+        fig.set_size_inches(15, 10)
+        hm = sns.heatmap(coefPD.transpose(), cmap="YlGnBu").set_title(itd)
+        plt.show()
+
+for j in _targetCol:
+    for i in _fsmdlDict['knn_lasso_lag1'][j].coefSelection:
+        if len(_fsmdlDict['knn_lasso_lag1'][j].coefSelection[i]) <=48:
+            print(len(_fsmdlDict['knn_lasso_lag1'][j].coefSelection[i]))
+
+
+
+###########################################################################################
+bm = tcv.benchMark()
+bmDict = {}
+for l in [1]:
+    for j in _colName:
+        _dataDict[j] = varCons(_data,_colName,j,l)
+        _trainDict[j] = _dataDict[j].iloc[0:10000]
+        _testDict[j] = _dataDict[j].drop(_trainDict[j].index)
+    _lasso = pd.read_csv(r'./Output/Window and Parameter/lasso_lag'+str(l)+'_winPara.csv')
+    _rf = pd.read_csv(r'./Output/Window and Parameter/randomForest_lag'+str(l)+'_winPara.csv')
+    _knn = pd.read_csv(r'./Output/Window and Parameter/knn_lag'+str(l)+'_winPara.csv')
+    _svm = pd.read_csv(r'./Output/Window and Parameter/svm_lag'+str(l)+'_winPara.csv')
+    _cvList = [_knn,_lasso,_rf,_svm]
+    cvName = ['knn_lag','lasso_lag','rf_lag','svm_lag']
+    for rt in range(len(_cvList)):
+        bmDict[cvName[rt]+l] = bm.Linear_Regression(_testDict,_cvList[rt],_responseVar)
+
 
 for i in _mdlDict:
+    mdlDict = _mdlDict[i]
+    reportDict = {}
     for j in _targetCol:
-        outputReport(_mdlDict[i][j],'test_'+i+ '_'+j)
+        reportDict[j]= rpt.cum_sse_report(mdlDict[j].error2,bmDict[i][j]).reportDF
+    _rptDict[i] = reportDict.copy()
 
 
+for i in bmDict:
+    print(i)

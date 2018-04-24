@@ -72,7 +72,7 @@ class rolling_Horizon(object):
                 if isinstance(mdl, Lasso):
                     coef = rlg.coef_
                     coefM = pd.DataFrame({'name': colName,'coef': coef})
-                    selectCoef = coefM.loc[np.abs(coefM.coef) >= 0]
+                    selectCoef = coefM.loc[np.abs(coefM.coef) > 0]
                     selectFeatures = selectCoef.name
                     self.coefSelection[i] = selectFeatures.tolist()
                 elif isinstance(mdl,RandomForestRegressor):
