@@ -58,7 +58,7 @@ class rolling_Horizon(object):
         for i in range(startInd,len(data)):
             rlg = mdl
             testx, testy, trainx, trainy = self.data_prep(data, dr, fixed, i, mdl, para, responseVar, startInd, wsize)
-            if isinstance(mdl,SVR) or isinstance(mdl,KNeighborsRegressor) or isinstance(mdl,LinearRegression):
+            if isinstance(mdl,SVR) or isinstance(mdl,KNeighborsRegressor):
                 trainx = trainx.apply(lambda x: (x - np.mean(x)) / np.std(x))
                 txmean = trainx.mean()
                 txstd = trainx.std()

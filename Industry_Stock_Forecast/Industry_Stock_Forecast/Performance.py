@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import json
 from matplotlib import pyplot as plt
+from sklearn.externals.joblib import Parallel, delayed
 _data = pd.read_csv(r".\Data\Data_2018.csv")
 _data = _data.drop('Unnamed: 0', axis = 1)
 _data.describe()
@@ -46,7 +47,7 @@ def report_cons_support(_mdlDict, _reportDict, bm, dpara, dr, i, mdl, paraName, 
     setattr(mdl,paraName,para)
     mdlDict = tcv.rolling_Horizon(mdl,_testDict[i],_responseVar,wsize,0,True,True,dpara,dr)
     reportDict= rpt.cum_sse_report(mdlDict.error2,bm.error2[i]).reportDF
-    return mdlDict, reportDict
+    return (mdlDict, reportDict)
 
 def report_cons (mdl,paraName,data,report_tune,targetCol,responseVar, dpara = 0,dr = 'None'):
     mdlDict = {}
@@ -61,6 +62,8 @@ def report_cons (mdl,paraName,data,report_tune,targetCol,responseVar, dpara = 0,
         tempMdl, tempReport = report_cons_support(mdlDict, report_tune, bm, dpr, dr, i, mdl, paraName, report_tune)
         mdlDict[i] = tempMdl
         reportDict[i] = tempReport
+    mdlDict = tempMdl
+    reportDict = tempReport
     return mdlDict, reportDict
 
 
@@ -88,7 +91,6 @@ _mdlList = [knn,lasso, rf, svm]
 _paraNameList = ['n_neighbors','alpha','max_features','C']
 _rptDict = {}
 _mdlDict = {}
-
 
 for l in [1,5,10]:
     ttlStart = timer()
